@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import type { LoThuoc } from "@/type";
 import {
   Card,
@@ -16,6 +17,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -24,7 +26,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { BoxesIcon, FlameIcon } from "@lucide/vue";
+import { BoxesIcon, FlameIcon, SearchIcon } from "@lucide/vue";
 
 interface LoThuocViewProps {
   lots: LoThuoc[];
@@ -38,6 +40,20 @@ const emit = defineEmits<{
   "update:conHangOnly": [value: boolean];
   tieuHuy: [maLo: string, tenThuoc: string, soLuongCon: number];
 }>();
+
+const searchQuery = ref("");
+
+const filteredLots = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return props.lots;
+  return props.lots.filter(
+    (lot) =>
+      lot.tenThuoc?.toLowerCase().includes(q) ||
+      lot.maThuoc?.toLowerCase().includes(q) ||
+      lot.maLo?.toLowerCase().includes(q) ||
+      lot.maPhieuNhap?.toLowerCase().includes(q)
+  );
+});
 
 function formatCurrency(val: number): string {
   return new Intl.NumberFormat("vi-VN", {
@@ -82,7 +98,7 @@ function handleTieuHuy(lot: LoThuoc) {
           </CardDescription>
         </div>
 
-        <div class="w-48">
+        <div class="w-48 shrink-0">
           <Select
             :model-value="conHangOnly ? 'true' : 'false'"
             @update:model-value="emit('update:conHangOnly', $event === 'true')"
@@ -96,6 +112,16 @@ function handleTieuHuy(lot: LoThuoc) {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <!-- Ô tìm kiếm lô thuốc theo tên thuốc / mã thuốc -->
+      <div class="pt-3 max-w-md relative">
+        <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          v-model="searchQuery"
+          placeholder="Tìm theo tên thuốc (vd: Paracetamol...), mã thuốc hoặc mã lô..."
+          class="pl-9 text-sm h-9"
+        />
       </div>
     </CardHeader>
 
@@ -127,7 +153,12 @@ function handleTieuHuy(lot: LoThuoc) {
                 Chưa có lô thuốc nào trong kho.
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="lot in lots" :key="lot.maLo" class="hover:bg-muted/40 transition-colors">
+            <TableRow v-else-if="filteredLots.length === 0">
+              <TableCell colspan="10" class="text-center py-10 text-muted-foreground text-sm">
+                Không tìm thấy lô thuốc nào cho từ khóa "{{ searchQuery }}".
+              </TableCell>
+            </TableRow>
+            <TableRow v-else v-for="lot in filteredLots" :key="lot.maLo" class="hover:bg-muted/40 transition-colors">
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ lot.maLo }}
               </TableCell>
@@ -191,6 +222,12 @@ function handleTieuHuy(lot: LoThuoc) {
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+
+      <!-- Count footer -->
+      <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
+        <span>Hiển thị {{ filteredLots.length }} / {{ lots.length }} lô thuốc</span>
+        <span v-if="searchQuery">Đang lọc theo tên thuốc / từ khóa: "{{ searchQuery }}"</span>
       </div>
     </CardContent>
   </Card>

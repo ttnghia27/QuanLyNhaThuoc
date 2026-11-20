@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { Thuoc, LoaiThuoc } from "@/type";
 import {
   Card,
@@ -32,6 +33,7 @@ import {
   Trash2Icon,
   FolderPlusIcon,
   PillIcon,
+  XIcon,
 } from "@lucide/vue";
 
 interface DrugTableProps {
@@ -53,6 +55,23 @@ const emit = defineEmits<{
   deleteDrug: [drug: Thuoc];
   openCategoryManager: [];
 }>();
+
+const filteredDrugs = computed(() => {
+  const q = props.searchQuery.trim().toLowerCase();
+  if (!q) return props.drugs;
+  return props.drugs.filter(
+    (drug) =>
+      drug.tenThuoc?.toLowerCase().includes(q) ||
+      drug.maThuoc?.toLowerCase().includes(q) ||
+      drug.congDung?.toLowerCase().includes(q) ||
+      drug.tenLoai?.toLowerCase().includes(q)
+  );
+});
+
+function handleClearSearch() {
+  emit("update:searchQuery", "");
+  emit("search");
+}
 
 function formatCurrency(val: number): string {
   return new Intl.NumberFormat("vi-VN", {
@@ -100,16 +119,37 @@ function formatCurrency(val: number): string {
 
       <!-- Filters & Search -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
-        <!-- Search input -->
-        <div class="sm:col-span-2 relative">
-          <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            :model-value="searchQuery"
-            @update:model-value="emit('update:searchQuery', String($event))"
-            @keydown.enter="emit('search')"
-            placeholder="Tìm theo tên thuốc, mã thuốc hoặc công dụng..."
-            class="pl-9 text-sm h-9"
-          />
+        <!-- Search input with clear button and search button -->
+        <div class="sm:col-span-2 flex items-center gap-2">
+          <div class="relative flex-1">
+            <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              :model-value="searchQuery"
+              @update:model-value="emit('update:searchQuery', String($event))"
+              @keydown.enter="emit('search')"
+              placeholder="Tìm theo tên thuốc, mã thuốc, công dụng..."
+              class="pl-9 pr-8 text-sm h-9"
+            />
+            <button
+              v-if="searchQuery"
+              type="button"
+              @click="handleClearSearch"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              title="Xóa tìm kiếm"
+            >
+              <XIcon class="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            class="h-9 px-3 text-xs shrink-0"
+            @click="emit('search')"
+          >
+            Tìm kiếm
+          </Button>
         </div>
 
         <!-- Category filter -->
@@ -165,12 +205,18 @@ function formatCurrency(val: number): string {
             <!-- Empty state -->
             <TableRow v-else-if="drugs.length === 0">
               <TableCell colspan="7" class="text-center py-10 text-muted-foreground text-sm">
-                Không tìm thấy thuốc nào phù hợp với bộ lọc hiện tại.
+                Chưa có thuốc nào trong hệ thống.
+              </TableCell>
+            </TableRow>
+
+            <TableRow v-else-if="filteredDrugs.length === 0">
+              <TableCell colspan="7" class="text-center py-10 text-muted-foreground text-sm">
+                Không tìm thấy thuốc nào khớp với từ khóa "{{ searchQuery }}".
               </TableCell>
             </TableRow>
 
             <!-- Data rows -->
-            <TableRow v-else v-for="drug in drugs" :key="drug.maThuoc" class="hover:bg-muted/40 transition-colors">
+            <TableRow v-else v-for="drug in filteredDrugs" :key="drug.maThuoc" class="hover:bg-muted/40 transition-colors">
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ drug.maThuoc }}
               </TableCell>
@@ -225,8 +271,9 @@ function formatCurrency(val: number): string {
 
       <!-- Table footer count -->
       <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
-        <span>Hiển thị {{ drugs.length }} sản phẩm</span>
-        <span v-if="selectedCategory !== 'ALL'">Đang lọc theo phân loại</span>
+        <span>Hiển thị {{ filteredDrugs.length }} / {{ drugs.length }} sản phẩm</span>
+        <span v-if="searchQuery">Đang lọc theo: "{{ searchQuery }}"</span>
+        <span v-else-if="selectedCategory !== 'ALL'">Đang lọc theo phân loại</span>
       </div>
     </CardContent>
   </Card>

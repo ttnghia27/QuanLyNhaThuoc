@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { KhachHang, CreateKhachHangRequest } from "@/type";
 import {
   Card,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UsersIcon, PlusIcon, PencilIcon, Trash2Icon, SearchIcon } from "@lucide/vue";
+import { UsersIcon, PlusIcon, PencilIcon, Trash2Icon, SearchIcon, XIcon } from "@lucide/vue";
 
 interface KhachHangViewProps {
   customers: KhachHang[];
@@ -35,7 +35,7 @@ interface KhachHangViewProps {
   searchQuery: string;
 }
 
-defineProps<KhachHangViewProps>();
+const props = defineProps<KhachHangViewProps>();
 
 const emit = defineEmits<{
   "update:searchQuery": [value: string];
@@ -51,6 +51,23 @@ const tenKH = ref("");
 const sdtKH = ref("");
 const diaChiKH = ref("");
 const formError = ref("");
+
+const filteredCustomers = computed(() => {
+  const q = props.searchQuery.trim().toLowerCase();
+  if (!q) return props.customers;
+  return props.customers.filter(
+    (c) =>
+      c.tenKH?.toLowerCase().includes(q) ||
+      c.maKH?.toLowerCase().includes(q) ||
+      (c.sdtKH && c.sdtKH.toLowerCase().includes(q)) ||
+      (c.diaChiKH && c.diaChiKH.toLowerCase().includes(q))
+  );
+});
+
+function handleClearSearch() {
+  emit("update:searchQuery", "");
+  emit("search");
+}
 
 function openCreateModal() {
   editingCustomer.value = null;
@@ -117,16 +134,37 @@ function handleDelete(c: KhachHang) {
         </Button>
       </div>
 
-      <!-- Search bar -->
-      <div class="pt-3 max-w-md relative">
-        <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          :model-value="searchQuery"
-          @update:model-value="emit('update:searchQuery', String($event))"
-          @keydown.enter="emit('search')"
-          placeholder="Tìm theo tên hoặc số điện thoại..."
-          class="pl-9 text-sm h-9"
-        />
+      <!-- Search bar with clear button and search button -->
+      <div class="pt-3 max-w-lg flex items-center gap-2">
+        <div class="relative flex-1">
+          <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            :model-value="searchQuery"
+            @update:model-value="emit('update:searchQuery', String($event))"
+            @keydown.enter="emit('search')"
+            placeholder="Tìm theo tên khách hàng, số điện thoại, mã KH..."
+            class="pl-9 pr-8 text-sm h-9"
+          />
+          <button
+            v-if="searchQuery"
+            type="button"
+            @click="handleClearSearch"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            title="Xóa tìm kiếm"
+          >
+            <XIcon class="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          class="h-9 px-3 text-xs shrink-0"
+          @click="emit('search')"
+        >
+          Tìm kiếm
+        </Button>
       </div>
     </CardHeader>
 
@@ -150,10 +188,15 @@ function handleDelete(c: KhachHang) {
             </TableRow>
             <TableRow v-else-if="customers.length === 0">
               <TableCell colspan="5" class="text-center py-10 text-muted-foreground text-sm">
-                Không tìm thấy khách hàng nào.
+                Chưa có khách hàng nào.
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="c in customers" :key="c.maKH">
+            <TableRow v-else-if="filteredCustomers.length === 0">
+              <TableCell colspan="5" class="text-center py-10 text-muted-foreground text-sm">
+                Không tìm thấy khách hàng nào phù hợp với từ khóa "{{ searchQuery }}".
+              </TableCell>
+            </TableRow>
+            <TableRow v-else v-for="c in filteredCustomers" :key="c.maKH">
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ c.maKH }}
               </TableCell>
@@ -191,6 +234,12 @@ function handleDelete(c: KhachHang) {
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+
+      <!-- Count footer -->
+      <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
+        <span>Hiển thị {{ filteredCustomers.length }} / {{ customers.length }} khách hàng</span>
+        <span v-if="searchQuery">Đang lọc theo: "{{ searchQuery }}"</span>
       </div>
     </CardContent>
 

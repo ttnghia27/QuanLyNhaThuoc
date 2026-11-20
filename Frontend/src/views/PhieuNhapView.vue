@@ -402,8 +402,8 @@ function formatDate(dateStr: string): string {
                 <div class="w-full sm:w-24">
                   <Input
                     type="number"
-                    min="1"
-                    step="500"
+                    min="1000"
+                    step="1000"
                     v-model="row.donGiaNhap"
                     placeholder="Giá nhập"
                     class="h-8 text-xs text-right"

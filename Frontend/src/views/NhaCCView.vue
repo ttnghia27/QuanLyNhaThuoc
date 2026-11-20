@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { NhaCC, CreateNhaCCRequest } from "@/type";
 import {
   Card,
@@ -27,14 +27,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TruckIcon, PlusIcon, PencilIcon, Trash2Icon } from "@lucide/vue";
+import { TruckIcon, PlusIcon, PencilIcon, Trash2Icon, SearchIcon } from "@lucide/vue";
 
 interface NhaCCViewProps {
   suppliers: NhaCC[];
   isLoading: boolean;
 }
 
-defineProps<NhaCCViewProps>();
+const props = defineProps<NhaCCViewProps>();
 
 const emit = defineEmits<{
   createSupplier: [payload: CreateNhaCCRequest];
@@ -42,11 +42,23 @@ const emit = defineEmits<{
   deleteSupplier: [id: string];
 }>();
 
+const searchQuery = ref("");
 const isModalOpen = ref(false);
 const editingSupplier = ref<NhaCC | null>(null);
 const tenNhaCC = ref("");
 const sdtNhaCC = ref("");
 const formError = ref("");
+
+const filteredSuppliers = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return props.suppliers;
+  return props.suppliers.filter(
+    (ncc) =>
+      ncc.tenNhaCC.toLowerCase().includes(q) ||
+      ncc.maNhaCC.toLowerCase().includes(q) ||
+      (ncc.sdtNhaCC && ncc.sdtNhaCC.toLowerCase().includes(q))
+  );
+});
 
 function openCreateModal() {
   editingSupplier.value = null;
@@ -109,6 +121,16 @@ function handleDelete(ncc: NhaCC) {
           Thêm nhà cung cấp
         </Button>
       </div>
+
+      <!-- Ô tìm kiếm nhà cung cấp -->
+      <div class="pt-3 max-w-md relative">
+        <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          v-model="searchQuery"
+          placeholder="Tìm theo tên nhà cung cấp, SĐT hoặc mã NCC..."
+          class="pl-9 text-sm h-9"
+        />
+      </div>
     </CardHeader>
 
     <CardContent>
@@ -133,7 +155,12 @@ function handleDelete(ncc: NhaCC) {
                 Chưa có nhà cung cấp nào.
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="ncc in suppliers" :key="ncc.maNhaCC">
+            <TableRow v-else-if="filteredSuppliers.length === 0">
+              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
+                Không tìm thấy nhà cung cấp nào phù hợp với từ khóa "{{ searchQuery }}".
+              </TableCell>
+            </TableRow>
+            <TableRow v-else v-for="ncc in filteredSuppliers" :key="ncc.maNhaCC" class="hover:bg-muted/40 transition-colors">
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ ncc.maNhaCC }}
               </TableCell>
@@ -168,6 +195,12 @@ function handleDelete(ncc: NhaCC) {
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+
+      <!-- Count footer -->
+      <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
+        <span>Hiển thị {{ filteredSuppliers.length }} / {{ suppliers.length }} nhà cung cấp</span>
+        <span v-if="searchQuery">Đang lọc theo: "{{ searchQuery }}"</span>
       </div>
     </CardContent>
 

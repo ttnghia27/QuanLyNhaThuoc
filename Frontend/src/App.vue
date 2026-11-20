@@ -394,6 +394,22 @@ async function handleCreateReceipt(payload: CreatePhieuNhapRequest) {
 }
 
 // Watchers
+let drugSearchTimer: ReturnType<typeof setTimeout> | null = null;
+watch(drugSearchQuery, () => {
+  if (drugSearchTimer) clearTimeout(drugSearchTimer);
+  drugSearchTimer = setTimeout(() => {
+    loadDrugs();
+  }, 300);
+});
+
+let customerSearchTimer: ReturnType<typeof setTimeout> | null = null;
+watch(customerSearchQuery, () => {
+  if (customerSearchTimer) clearTimeout(customerSearchTimer);
+  customerSearchTimer = setTimeout(() => {
+    loadCustomers();
+  }, 300);
+});
+
 watch(selectedDrugCategory, () => {
   loadDrugs();
 });

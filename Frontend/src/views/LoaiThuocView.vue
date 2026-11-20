@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { LoaiThuoc, CreateLoaiThuocRequest } from "@/type";
 import {
   Card,
@@ -28,14 +28,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { PlusIcon, PencilIcon, Trash2Icon, TagsIcon } from "@lucide/vue";
+import { PlusIcon, PencilIcon, Trash2Icon, TagsIcon, SearchIcon } from "@lucide/vue";
 
 interface LoaiThuocViewProps {
   categories: LoaiThuoc[];
   isLoading: boolean;
 }
 
-defineProps<LoaiThuocViewProps>();
+const props = defineProps<LoaiThuocViewProps>();
 
 const emit = defineEmits<{
   createCategory: [payload: CreateLoaiThuocRequest];
@@ -43,10 +43,21 @@ const emit = defineEmits<{
   deleteCategory: [id: string];
 }>();
 
+const searchQuery = ref("");
 const isModalOpen = ref(false);
 const editingCategory = ref<LoaiThuoc | null>(null);
 const tenLoai = ref("");
 const formError = ref("");
+
+const filteredCategories = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return props.categories;
+  return props.categories.filter(
+    (cat) =>
+      cat.tenLoai.toLowerCase().includes(q) ||
+      cat.maLoai.toLowerCase().includes(q)
+  );
+});
 
 function openCreateModal() {
   editingCategory.value = null;
@@ -106,6 +117,16 @@ function handleDelete(cat: LoaiThuoc) {
           Thêm phân loại
         </Button>
       </div>
+
+      <!-- Ô tìm kiếm loại thuốc -->
+      <div class="pt-3 max-w-md relative">
+        <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          v-model="searchQuery"
+          placeholder="Tìm theo tên loại thuốc hoặc mã loại..."
+          class="pl-9 text-sm h-9"
+        />
+      </div>
     </CardHeader>
 
     <CardContent>
@@ -130,7 +151,12 @@ function handleDelete(cat: LoaiThuoc) {
                 Chưa có loại thuốc nào.
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="cat in categories" :key="cat.maLoai">
+            <TableRow v-else-if="filteredCategories.length === 0">
+              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
+                Không tìm thấy loại thuốc nào phù hợp với từ khóa "{{ searchQuery }}".
+              </TableCell>
+            </TableRow>
+            <TableRow v-else v-for="cat in filteredCategories" :key="cat.maLoai" class="hover:bg-muted/40 transition-colors">
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ cat.maLoai }}
               </TableCell>
@@ -167,6 +193,12 @@ function handleDelete(cat: LoaiThuoc) {
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+
+      <!-- Count footer -->
+      <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
+        <span>Hiển thị {{ filteredCategories.length }} / {{ categories.length }} loại thuốc</span>
+        <span v-if="searchQuery">Đang lọc theo: "{{ searchQuery }}"</span>
       </div>
     </CardContent>
 
