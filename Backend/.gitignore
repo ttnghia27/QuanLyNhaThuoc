@@ -1,0 +1,45 @@
+## Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache & temporary files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+
+## Rider & JetBrains
+.idea/
+*.DotSettings.user
+
+## VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Publishing & Deployment
+publish/
+Publish/
+*.Publish.xml
+*.pubxml
+*.azurePubxml
+
+## NuGet
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.assets.json
+
+## Secrets & Local configurations (optional)
+appsettings*.local.json
+secrets.json
+
+## OS generated files
+.DS_Store
+Thumbs.db
