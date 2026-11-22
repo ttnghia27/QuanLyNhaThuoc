@@ -240,7 +240,7 @@ function formatDate(dateStr: string): string {
 
         <!-- Dialog: Xem chi tiết hóa đơn -->
         <Dialog :open="isDetailOpen" @update:open="isDetailOpen = $event">
-            <DialogContent class="sm:max-w-[620px]">
+            <DialogContent class="sm:max-w-155">
                 <DialogHeader>
                     <DialogTitle>Chi tiết Hóa đơn: {{ selectedInvoice?.maHD }}</DialogTitle>
                     <DialogDescription>
@@ -345,7 +345,7 @@ function formatDate(dateStr: string): string {
                             <SelectContent>
                                 <SelectItem v-for="kh in customers" :key="kh.maKH" :value="kh.maKH">
                                     {{ kh.tenKH }} ({{ kh.maKH }})
-                                    {{ kh.sdtKH ? `- ${kh.sdtKH}` : "" }}
+                                    {{ kh.sdtkh ? `- ${kh.sdtkh}` : "" }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>

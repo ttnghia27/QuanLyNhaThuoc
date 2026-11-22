@@ -1,89 +1,72 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaThuoc.API.Data;
 using QuanLyNhaThuoc.API.DTOs;
-using QuanLyNhaThuoc.API.Helpers;
 using QuanLyNhaThuoc.API.Models;
 
 namespace QuanLyNhaThuoc.API.Services;
 
-public class PhieuNhapService
+public sealed class PhieuNhapService
 {
     private readonly ApplicationDbContext _context;
-    private readonly CodeGenerator _codeGen;
+    private readonly StoredProcedureExecutor _procedureExecutor;
 
-    public PhieuNhapService(ApplicationDbContext context, CodeGenerator codeGen)
+    public PhieuNhapService(ApplicationDbContext context, StoredProcedureExecutor procedureExecutor)
     {
         _context = context;
-        _codeGen = codeGen;
+        _procedureExecutor = procedureExecutor;
+    }
+
+    public async Task<List<PhieuNhapListItem>> GetAllAsync()
+    {
+        return await _context.PhieuNhaps
+            .OrderByDescending(x => x.NgayNhap)
+            .Select(x => new PhieuNhapListItem(
+                x.MaPhieuNhap,
+                x.NgayNhap,
+                x.TongTien,
+                x.MaNhaCC,
+                x.NhaCC.TenNhaCC))
+            .ToListAsync();
+    }
+
+    public async Task<PhieuNhapDetail?> GetByIdAsync(string id)
+    {
+        return await _context.PhieuNhaps
+            .Where(x => x.MaPhieuNhap == id)
+            .Select(x => new PhieuNhapDetail(
+                x.MaPhieuNhap,
+                x.NgayNhap,
+                x.TongTien,
+                x.MaNhaCC,
+                x.NhaCC.TenNhaCC,
+                x.LoThuocs.Select(l => new PhieuNhapLoItem(
+                    l.MaLo,
+                    l.MaThuoc,
+                    l.Thuoc.TenThuoc,
+                    l.HanSuDung,
+                    l.SoLuongNhap,
+                    l.SoLuongCon,
+                    l.DonGiaNhap,
+                    l.SoLuongNhap * l.DonGiaNhap))))
+            .FirstOrDefaultAsync();
     }
 
     public async Task<PhieuNhap> CreateAsync(CreatePhieuNhapRequest request)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        if (request.ChiTiet == null || request.ChiTiet.Count == 0)
+            throw new BusinessRuleException("Phiếu nhập phải có ít nhất 1 sản phẩm");
 
-        try
-        {
-            var maPN = await _codeGen.GenerateMaPhieuNhapAsync();
+        var chiTietJson = System.Text.Json.JsonSerializer.Serialize(request.ChiTiet);
+        var id = await _procedureExecutor.ExecuteAndGetIdAsync(
+            "dbo.sp_TaoPhieuNhap",
+            "MaPhieuNhap",
+            new ProcedureParameter("@MaNhaCC", DbType.String, request.MaNhaCC, 10),
+            new ProcedureParameter("@NgayNhap", DbType.Date, request.NgayNhap),
+            new ProcedureParameter("@ChiTiet", DbType.String, chiTietJson, -1));
 
-            var phieuNhap = new PhieuNhap
-            {
-                MaPhieuNhap = maPN,
-                NgayNhap = request.NgayNhap ?? DateTime.Today,
-                MaNhaCC = request.MaNhaCC,
-                TongTien = 0
-            };
-
-            decimal tongTien = 0;
-
-            foreach (var ct in request.ChiTiet)
-            {
-                // 1. Thêm chi tiết phiếu nhập
-                var chiTiet = new ChiTietPhieuNhap
-                {
-                    MaPhieuNhap = maPN,
-                    MaThuoc = ct.MaThuoc,
-                    SoLuongNhap = ct.SoLuongNhap,
-                    DonGiaNhap = ct.DonGiaNhap
-                };
-                _context.ChiTietPhieuNhaps.Add(chiTiet);
-
-                // 2. Tự động tạo Lô thuốc
-                var maLo = await _codeGen.GenerateMaLoAsync();
-                var lo = new LoThuoc
-                {
-                    MaLo = maLo,
-                    MaThuoc = ct.MaThuoc,
-                    MaPhieuNhap = maPN,
-                    NgayNhapKho = phieuNhap.NgayNhap,
-                    HanSuDung = ct.HanSuDung,
-                    SoLuongNhap = ct.SoLuongNhap,
-                    SoLuongCon = ct.SoLuongNhap,
-                    DonGiaNhap = ct.DonGiaNhap
-                };
-                _context.LoThuocs.Add(lo);
-
-                // 3. Cập nhật tồn kho thuốc
-                var thuoc = await _context.Thuocs.FindAsync(ct.MaThuoc);
-                if (thuoc != null)
-                {
-                    thuoc.SoLuongTonKho += ct.SoLuongNhap;
-                }
-
-                tongTien += ct.SoLuongNhap * ct.DonGiaNhap;
-            }
-
-            phieuNhap.TongTien = tongTien;
-            _context.PhieuNhaps.Add(phieuNhap);
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            return phieuNhap;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        return await _context.PhieuNhaps.FirstOrDefaultAsync(x => x.MaPhieuNhap == id)
+            ?? throw new InvalidOperationException(
+                $"Stored procedure 'dbo.sp_TaoPhieuNhap' created '{id}' but the record could not be loaded.");
     }
 }
