@@ -294,7 +294,7 @@ async function exportMonthlyImportTotals() {
                         @click="exportMonthlyImportTotals"
                     >
                         <FileDownIcon class="mr-1 h-3.5 w-3.5" />
-                        {{ isExporting ? "Đang xuất..." : "Xuất Excel" }}
+                        {{ isExporting ? "Đang xuất..." : "Xuất báo cáo nhập hàng" }}
                     </Button>
                     <div class="flex gap-2.5">
                         <div
