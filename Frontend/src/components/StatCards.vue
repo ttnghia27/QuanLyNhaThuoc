@@ -78,22 +78,17 @@ const alertStats = computed(() => {
     const s = props.stats;
     const lowStock = s?.thuocSapHetHang ?? 0;
     const nearExpiry = s?.loSapHetHan ?? 0;
+    const expired = s?.loDaHetHan ?? 0;
 
     return [
         {
             title: "Thuốc sắp hết hàng",
             value: formatCount(lowStock),
             description: "Tồn kho không quá 10",
-            badge: lowStock > 0 ? "Cần nhập thêm" : "Ổn định",
             cardClass:
                 lowStock > 0
                     ? "border-amber-400 bg-amber-50/90 shadow-sm dark:border-amber-500/60 dark:bg-amber-950/35"
                     : "border-border bg-card",
-            badgeClass:
-                lowStock > 0
-                    ? "bg-amber-500/15 text-amber-800 border-amber-500/30 dark:text-amber-300"
-                    : "bg-muted text-muted-foreground border-border",
-            dotClass: lowStock > 0 ? "bg-amber-500 animate-pulse" : "bg-emerald-500",
             valueClass:
                 lowStock > 0
                     ? "text-amber-700 dark:text-amber-300 text-2xl font-bold"
@@ -103,19 +98,24 @@ const alertStats = computed(() => {
             title: "Lô sắp hết hạn",
             value: formatCount(nearExpiry),
             description: "Cảnh báo tồn kho hiện tại",
-            badge: nearExpiry > 0 ? "Ưu tiên xử lý" : "An toàn",
             cardClass:
                 nearExpiry > 0
-                    ? "border-rose-400 bg-rose-50/90 shadow-sm dark:border-rose-500/60 dark:bg-rose-950/35"
+                    ? "border-orange-400 bg-orange-50/90 shadow-sm"
                     : "border-border bg-card",
-            badgeClass:
-                nearExpiry > 0
-                    ? "bg-rose-500/15 text-rose-800 border-rose-500/30 dark:text-rose-300"
-                    : "bg-muted text-muted-foreground border-border",
-            dotClass: nearExpiry > 0 ? "bg-rose-500 animate-ping" : "bg-emerald-500",
             valueClass:
                 nearExpiry > 0
-                    ? "text-rose-700 dark:text-rose-300 text-3xl font-bold"
+                    ? "text-orange-700 dark:text-orange-300 text-3xl font-bold"
+                    : "text-2xl font-semibold",
+        },
+        {
+            title: "Lô đã hết hạn",
+            value: formatCount(expired),
+            description: "Cần thu hồi / hủy lô",
+            cardClass:
+                expired > 0 ? "border-rose-500 bg-rose-100/80 shadow-sm" : "border-border bg-card",
+            valueClass:
+                expired > 0
+                    ? "text-rose-800 dark:text-rose-200 text-3xl font-extrabold"
                     : "text-2xl font-semibold",
         },
     ];
@@ -149,9 +149,9 @@ const alertStats = computed(() => {
         </div>
 
         <!-- Hàng 2: Nhóm đơn hàng (trái) & Cụm cảnh báo hết hàng + hết hạn (phải) -->
-        <div class="flex flex-col gap-4 xl:flex-row xl:items-stretch">
+        <div class="flex flex-col gap-4">
             <!-- Cụm đơn hàng -->
-            <div class="flex flex-1 flex-col gap-4 sm:flex-row">
+            <div class="flex flex-1 flex-row gap-4">
                 <Card
                     v-for="stat in orderStats"
                     :key="stat.title"
@@ -178,9 +178,7 @@ const alertStats = computed(() => {
             </div>
 
             <!-- Cụm cảnh báo nổi bật: Thuốc sắp hết hàng & Lô sắp hết hạn đi cùng nhau -->
-            <div
-                class="flex flex-1 flex-col gap-3 rounded-xl border border-rose-500/25 bg-rose-500/[0.03] sm:flex-row"
-            >
+            <div class="flex flex-1 flex-row gap-3 rounded-xl border">
                 <Card
                     v-for="alert in alertStats"
                     :key="alert.title"
@@ -188,32 +186,10 @@ const alertStats = computed(() => {
                 >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <div class="flex items-center gap-2">
-                            <span class="relative flex h-2.5 w-2.5">
-                                <span
-                                    :class="[
-                                        'absolute inline-flex h-full w-full rounded-full opacity-75',
-                                        alert.dotClass,
-                                    ]"
-                                />
-                                <span
-                                    :class="[
-                                        'relative inline-flex h-2.5 w-2.5 rounded-full',
-                                        alert.dotClass,
-                                    ]"
-                                />
-                            </span>
                             <CardTitle class="text-sm font-semibold">
                                 {{ alert.title }}
                             </CardTitle>
                         </div>
-                        <span
-                            :class="[
-                                'rounded-full border px-2 py-0.5 text-[11px] font-medium',
-                                alert.badgeClass,
-                            ]"
-                        >
-                            {{ alert.badge }}
-                        </span>
                     </CardHeader>
                     <CardContent>
                         <div v-if="isLoading" class="h-9 w-20 animate-pulse rounded bg-muted" />

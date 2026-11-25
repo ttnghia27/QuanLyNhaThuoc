@@ -109,5 +109,6 @@ public sealed record TongQuanDTO(
     decimal GiaTriTrungBinhDon,
     int SoHoaDon,
     int ThuocSapHetHang,
-    int LoSapHetHan
+    int LoSapHetHan,
+    int LoDaHetHan
 );

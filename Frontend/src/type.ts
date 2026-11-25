@@ -153,6 +153,7 @@ export interface ThongKeTongQuan {
     giaTriTrungBinhDon: number;
     thuocSapHetHang: number;
     loSapHetHan: number;
+    loDaHetHan: number;
 }
 
 export interface ThongKeDoanhThuItem {
