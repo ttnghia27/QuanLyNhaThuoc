@@ -36,7 +36,10 @@ public class ApplicationDbContext : DbContext
         // THUOC
         modelBuilder.Entity<Thuoc>(e =>
         {
-            e.ToTable("THUOC");
+            e.ToTable("THUOC", tb =>
+            {
+                tb.HasTrigger("trg_InsteadOfDelete_Thuoc");
+            });
             e.HasKey(x => x.MaThuoc);
             e.Property(x => x.MaThuoc).HasMaxLength(10);
             e.Property(x => x.TenThuoc).HasMaxLength(200).IsRequired();
