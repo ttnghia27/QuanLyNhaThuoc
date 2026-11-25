@@ -357,7 +357,7 @@ function formatDate(dateStr: string): string {
 
     <!-- Dialog: Xem chi tiết phiếu nhập -->
     <Dialog :open="isDetailOpen" @update:open="isDetailOpen = $event">
-      <DialogContent class="sm:max-w-[640px]">
+      <DialogContent class="sm:max-w-160">
         <DialogHeader>
           <DialogTitle
             >Chi tiết Phiếu nhập:
@@ -443,7 +443,7 @@ function formatDate(dateStr: string): string {
 
     <!-- Dialog: Tạo phiếu nhập mới -->
     <Dialog :open="isCreateOpen" @update:open="isCreateOpen = $event">
-      <DialogContent class="sm:max-w-[620px]">
+      <DialogContent class="sm:max-w-160">
         <DialogHeader>
           <DialogTitle>Tạo Phiếu nhập kho mới</DialogTitle>
           <DialogDescription>
