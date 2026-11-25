@@ -162,3 +162,13 @@ export interface ThongKeDoanhThuItem {
 export interface ApiMessageResponse {
     message: string;
 }
+
+export interface LoginRequest {
+    tenDangNhap: string;
+    matKhau: string;
+}
+
+export interface LoginResponse {
+    token: string;
+    hoTen: string;
+}

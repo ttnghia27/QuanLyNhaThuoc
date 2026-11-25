@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QuanLyNhaThuoc.API.Data;
 using QuanLyNhaThuoc.API.DTOs;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 
@@ -18,14 +21,25 @@ public sealed class AuthService
         _context = context;
         _configuration = configuration;
     }
+    public record NguoiDungLogin(String TenDangNhap, String MatKhau);
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
     {
         var user = await _context.NguoiDungs
             .FirstOrDefaultAsync(x => x.TenDangNhap == request.TenDangNhap);
-
-        if (user == null || user.MatKhau != request.MatKhau)
+        if(user == null)
+        {
             return null;
+        }
+        var logining_user = new NguoiDungLogin(request.TenDangNhap, request.MatKhau);
+        var hasher = new PasswordHasher<NguoiDungLogin>();
+        var result = hasher.VerifyHashedPassword(logining_user, user.MatKhau, request.MatKhau);
+        bool isValid = result is PasswordVerificationResult.Success or PasswordVerificationResult.SuccessRehashNeeded;
+        Console.WriteLine($"[AuthService] result = {result}, isValid = {isValid}");       
+        if (!isValid)
+        {
+            return null;
+        }
 
         return new LoginResponse
         {
