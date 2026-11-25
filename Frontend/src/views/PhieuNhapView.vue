@@ -71,33 +71,18 @@ const sortBy = ref<ReceiptSortOption>("dateDesc");
 const isSortMenuOpen = ref(false);
 const sortMenuRef = ref<HTMLDivElement | null>(null);
 
-function compareReceiptsByDate(
-  a: PhieuNhap,
-  b: PhieuNhap,
-  direction: 1 | -1,
-): number {
-  const dateDifference =
-    new Date(a.ngayNhap).getTime() - new Date(b.ngayNhap).getTime();
-  if (dateDifference !== 0) return dateDifference * direction;
-
-  return (
-    a.maPhieuNhap.localeCompare(b.maPhieuNhap, undefined, { numeric: true }) *
-    direction
-  );
-}
-
 const sortedReceipts = computed(() =>
   [...props.receipts].sort((a, b) => {
     switch (sortBy.value) {
       case "dateAsc":
-        return compareReceiptsByDate(a, b, 1);
+        return new Date(a.ngayNhap).getTime() - new Date(b.ngayNhap).getTime();
       case "totalAsc":
         return a.tongTien - b.tongTien;
       case "totalDesc":
         return b.tongTien - a.tongTien;
       case "dateDesc":
       default:
-        return compareReceiptsByDate(a, b, -1);
+        return new Date(b.ngayNhap).getTime() - new Date(a.ngayNhap).getTime();
     }
   }),
 );
