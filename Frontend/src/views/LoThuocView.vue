@@ -42,7 +42,12 @@ const emit = defineEmits<{
 }>();
 
 const searchQuery = ref("");
-
+function isExpired(expired: Date | string): boolean {
+  const DAYS_30 = 30 * 24 * 60 * 60 * 1000;
+  const expired_date = new Date(expired);
+  const now = new Date();
+  return expired_date.getTime() < now.getTime() + DAYS_30;
+}
 const filteredLots = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q) return props.lots;
@@ -51,7 +56,7 @@ const filteredLots = computed(() => {
       lot.tenThuoc?.toLowerCase().includes(q) ||
       lot.maThuoc?.toLowerCase().includes(q) ||
       lot.maLo?.toLowerCase().includes(q) ||
-      lot.maPhieuNhap?.toLowerCase().includes(q)
+      lot.maPhieuNhap?.toLowerCase().includes(q),
   );
 });
 
@@ -76,7 +81,7 @@ function formatDate(dateStr: string): string {
 function handleTieuHuy(lot: LoThuoc) {
   if (
     confirm(
-      `CẢNH BÁO TIÊU HỦY:\nBạn có chắc muốn tiêu hủy toàn bộ ${lot.soLuongCon} sản phẩm của lô ${lot.maLo} (${lot.tenThuoc})?\nSố lượng này sẽ bị trừ trực tiếp khỏi tồn kho thuốc.`
+      `CẢNH BÁO TIÊU HỦY:\nBạn có chắc muốn tiêu hủy toàn bộ ${lot.soLuongCon} sản phẩm của lô ${lot.maLo} (${lot.tenThuoc})?\nSố lượng này sẽ bị trừ trực tiếp khỏi tồn kho thuốc.`,
     )
   ) {
     emit("tieuHuy", lot.maLo, lot.tenThuoc, lot.soLuongCon);
@@ -87,14 +92,17 @@ function handleTieuHuy(lot: LoThuoc) {
 <template>
   <Card class="border-border/60 shadow-xs">
     <CardHeader class="pb-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
           <CardTitle class="text-base font-semibold flex items-center gap-2">
             <BoxesIcon class="w-4 h-4 text-primary" />
             Bảng Dữ liệu: Lô thuốc trong kho (LoThuoc)
           </CardTitle>
           <CardDescription class="text-xs">
-            Theo dõi từng lô thuốc nhập về, hạn sử dụng và thực hiện thao tác Tiêu hủy lô hết hạn
+            Theo dõi từng lô thuốc nhập về, hạn sử dụng và thực hiện thao tác
+            Tiêu hủy lô hết hạn
           </CardDescription>
         </div>
 
@@ -116,7 +124,9 @@ function handleTieuHuy(lot: LoThuoc) {
 
       <!-- Ô tìm kiếm lô thuốc theo tên thuốc / mã thuốc -->
       <div class="pt-3 max-w-md relative">
-        <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <SearchIcon
+          class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           v-model="searchQuery"
           placeholder="Tìm theo tên thuốc (vd: Paracetamol...), mã thuốc hoặc mã lô..."
@@ -144,21 +154,35 @@ function handleTieuHuy(lot: LoThuoc) {
           </TableHeader>
           <TableBody>
             <TableRow v-if="isLoading">
-              <TableCell colspan="10" class="text-center py-10 text-muted-foreground text-sm">
+              <TableCell
+                colspan="10"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
                 Đang tải dữ liệu lô thuốc...
               </TableCell>
             </TableRow>
             <TableRow v-else-if="lots.length === 0">
-              <TableCell colspan="10" class="text-center py-10 text-muted-foreground text-sm">
+              <TableCell
+                colspan="10"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
                 Chưa có lô thuốc nào trong kho.
               </TableCell>
             </TableRow>
             <TableRow v-else-if="filteredLots.length === 0">
-              <TableCell colspan="10" class="text-center py-10 text-muted-foreground text-sm">
+              <TableCell
+                colspan="10"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
                 Không tìm thấy lô thuốc nào cho từ khóa "{{ searchQuery }}".
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="lot in filteredLots" :key="lot.maLo" class="hover:bg-muted/40 transition-colors">
+            <TableRow
+              v-else
+              v-for="lot in filteredLots"
+              :key="lot.maLo"
+              class="hover:bg-muted/40 transition-colors"
+            >
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ lot.maLo }}
               </TableCell>
@@ -199,6 +223,11 @@ function handleTieuHuy(lot: LoThuoc) {
                   Đã xuất hết
                 </Badge>
                 <Badge
+                  v-else-if="isExpired(lot.hanSuDung)"
+                  class="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-800 border-amber-300"
+                  >Sắp hết hạn</Badge
+                >
+                <Badge
                   v-else
                   variant="outline"
                   class="text-[10px] px-1.5 py-0.5 border-emerald-500 text-emerald-600"
@@ -225,9 +254,15 @@ function handleTieuHuy(lot: LoThuoc) {
       </div>
 
       <!-- Count footer -->
-      <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
-        <span>Hiển thị {{ filteredLots.length }} / {{ lots.length }} lô thuốc</span>
-        <span v-if="searchQuery">Đang lọc theo tên thuốc / từ khóa: "{{ searchQuery }}"</span>
+      <div
+        class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1"
+      >
+        <span
+          >Hiển thị {{ filteredLots.length }} / {{ lots.length }} lô thuốc</span
+        >
+        <span v-if="searchQuery"
+          >Đang lọc theo tên thuốc / từ khóa: "{{ searchQuery }}"</span
+        >
       </div>
     </CardContent>
   </Card>

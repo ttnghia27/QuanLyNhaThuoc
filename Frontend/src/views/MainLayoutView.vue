@@ -21,8 +21,7 @@ import type {
 import { pharmacyApi } from "@/services/api";
 import Sidebar, { type NavTab } from "@/components/Sidebar.vue";
 import DashboardView from "@/views/DashboardView.vue";
-import DrugTable from "@/components/DrugTable.vue";
-import DrugModal from "@/components/DrugModal.vue";
+import DrugView from "@/views/DrugView.vue";
 import LoaiThuocView from "@/views/LoaiThuocView.vue";
 import KhachHangView from "@/views/KhachHangView.vue";
 import NhaCCView from "@/views/NhaCCView.vue";
@@ -492,20 +491,26 @@ onMounted(() => {
         />
 
         <!-- Tab 2: Thuốc CRUD -->
-        <div v-else-if="currentTab === 'thuoc'">
-          <DrugTable
-            :drugs="drugs"
-            :categories="categories"
-            :is-loading="isDrugsLoading"
-            v-model:search-query="drugSearchQuery"
-            v-model:selected-category="selectedDrugCategory"
-            @search="loadDrugs"
-            @create-drug="openCreateDrugModal"
-            @edit-drug="openEditDrugModal"
-            @delete-drug="handleDeleteDrug"
-            @open-category-manager="currentTab = 'loai-thuoc'"
-          />
-        </div>
+        <DrugView
+          v-else-if="currentTab === 'thuoc'"
+          :drugs="drugs"
+          :categories="categories"
+          :is-loading="isDrugsLoading"
+          :search-query="drugSearchQuery"
+          :selected-category="selectedDrugCategory"
+          :is-modal-open="isDrugModalOpen"
+          :drug-to-edit="drugToEdit"
+          :is-saving="isSavingDrug"
+          @update:search-query="drugSearchQuery = $event"
+          @update:selected-category="selectedDrugCategory = $event"
+          @update:modal-open="isDrugModalOpen = $event"
+          @search="loadDrugs"
+          @create-drug="openCreateDrugModal"
+          @edit-drug="openEditDrugModal"
+          @delete-drug="handleDeleteDrug"
+          @open-category-manager="currentTab = 'loai-thuoc'"
+          @save="handleSaveDrug"
+        />
 
         <!-- Tab 3: Loại thuốc CRUD -->
         <LoaiThuocView
@@ -569,14 +574,5 @@ onMounted(() => {
         />
       </main>
     </div>
-
-    <!-- Modals -->
-    <DrugModal
-      v-model:open="isDrugModalOpen"
-      :categories="categories"
-      :drug-to-edit="drugToEdit"
-      :is-saving="isSavingDrug"
-      @save="handleSaveDrug"
-    />
   </div>
 </template>

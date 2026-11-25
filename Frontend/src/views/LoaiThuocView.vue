@@ -28,7 +28,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { PlusIcon, PencilIcon, Trash2Icon, TagsIcon, SearchIcon } from "@lucide/vue";
+import {
+  PlusIcon,
+  PencilIcon,
+  Trash2Icon,
+  TagsIcon,
+  SearchIcon,
+} from "@lucide/vue";
 
 interface LoaiThuocViewProps {
   categories: LoaiThuoc[];
@@ -55,7 +61,7 @@ const filteredCategories = computed(() => {
   return props.categories.filter(
     (cat) =>
       cat.tenLoai.toLowerCase().includes(q) ||
-      cat.maLoai.toLowerCase().includes(q)
+      cat.maLoai.toLowerCase().includes(q),
   );
 });
 
@@ -92,7 +98,9 @@ function handleSave() {
 }
 
 function handleDelete(cat: LoaiThuoc) {
-  if (confirm(`Bạn có chắc muốn xóa loại thuốc "${cat.tenLoai}" (${cat.maLoai})?`)) {
+  if (
+    confirm(`Bạn có chắc muốn xóa loại thuốc "${cat.tenLoai}" (${cat.maLoai})?`)
+  ) {
     emit("deleteCategory", cat.maLoai);
   }
 }
@@ -101,14 +109,17 @@ function handleDelete(cat: LoaiThuoc) {
 <template>
   <Card class="border-border/60 shadow-xs">
     <CardHeader class="pb-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
           <CardTitle class="text-base font-semibold flex items-center gap-2">
             <TagsIcon class="w-4 h-4 text-primary" />
             Bảng Dữ liệu: Phân loại Thuốc (LoaiThuoc)
           </CardTitle>
           <CardDescription class="text-xs">
-            Quản lý các nhóm danh mục thuốc trong nhà thuốc (CRUD bảng LoaiThuoc)
+            Quản lý các nhóm danh mục thuốc trong nhà thuốc (CRUD bảng
+            LoaiThuoc)
           </CardDescription>
         </div>
 
@@ -118,9 +129,11 @@ function handleDelete(cat: LoaiThuoc) {
         </Button>
       </div>
 
-      <!-- Ô tìm kiếm loại thuốc -->
+      Ô tìm kiếm loại thuốc
       <div class="pt-3 max-w-md relative">
-        <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <SearchIcon
+          class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           v-model="searchQuery"
           placeholder="Tìm theo tên loại thuốc hoặc mã loại..."
@@ -142,21 +155,37 @@ function handleDelete(cat: LoaiThuoc) {
           </TableHeader>
           <TableBody>
             <TableRow v-if="isLoading">
-              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
+              <TableCell
+                colspan="4"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
                 Đang tải danh mục loại thuốc...
               </TableCell>
             </TableRow>
             <TableRow v-else-if="categories.length === 0">
-              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
+              <TableCell
+                colspan="4"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
                 Chưa có loại thuốc nào.
               </TableCell>
             </TableRow>
             <TableRow v-else-if="filteredCategories.length === 0">
-              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
-                Không tìm thấy loại thuốc nào phù hợp với từ khóa "{{ searchQuery }}".
+              <TableCell
+                colspan="4"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
+                Không tìm thấy loại thuốc nào phù hợp với từ khóa "{{
+                  searchQuery
+                }}".
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="cat in filteredCategories" :key="cat.maLoai" class="hover:bg-muted/40 transition-colors">
+            <TableRow
+              v-else
+              v-for="cat in filteredCategories"
+              :key="cat.maLoai"
+              class="hover:bg-muted/40 transition-colors"
+            >
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ cat.maLoai }}
               </TableCell>
@@ -196,8 +225,13 @@ function handleDelete(cat: LoaiThuoc) {
       </div>
 
       <!-- Count footer -->
-      <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
-        <span>Hiển thị {{ filteredCategories.length }} / {{ categories.length }} loại thuốc</span>
+      <div
+        class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1"
+      >
+        <span
+          >Hiển thị {{ filteredCategories.length }} /
+          {{ categories.length }} loại thuốc</span
+        >
         <span v-if="searchQuery">Đang lọc theo: "{{ searchQuery }}"</span>
       </div>
     </CardContent>
@@ -206,19 +240,26 @@ function handleDelete(cat: LoaiThuoc) {
     <Dialog :open="isModalOpen" @update:open="isModalOpen = $event">
       <DialogContent class="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>{{ editingCategory ? "Chỉnh sửa Loại thuốc" : "Thêm Loại thuốc mới" }}</DialogTitle>
+          <DialogTitle>{{
+            editingCategory ? "Chỉnh sửa Loại thuốc" : "Thêm Loại thuốc mới"
+          }}</DialogTitle>
           <DialogDescription>
             Nhập tên phân loại thuốc để quản lý danh mục.
           </DialogDescription>
         </DialogHeader>
 
         <form @submit.prevent="handleSave" class="space-y-4 py-2">
-          <div v-if="formError" class="p-2 text-xs text-destructive bg-destructive/10 rounded">
+          <div
+            v-if="formError"
+            class="p-2 text-xs text-destructive bg-destructive/10 rounded"
+          >
             {{ formError }}
           </div>
 
           <div class="space-y-1.5">
-            <Label for="tenLoai">Tên loại thuốc <span class="text-destructive">*</span></Label>
+            <Label for="tenLoai"
+              >Tên loại thuốc <span class="text-destructive">*</span></Label
+            >
             <Input
               id="tenLoai"
               v-model="tenLoai"
@@ -228,7 +269,11 @@ function handleDelete(cat: LoaiThuoc) {
           </div>
 
           <DialogFooter class="pt-2">
-            <Button type="button" variant="outline" @click="isModalOpen = false">
+            <Button
+              type="button"
+              variant="outline"
+              @click="isModalOpen = false"
+            >
               Hủy
             </Button>
             <Button type="submit">
