@@ -27,7 +27,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TruckIcon, PlusIcon, PencilIcon, Trash2Icon, SearchIcon } from "@lucide/vue";
+import {
+  TruckIcon,
+  PlusIcon,
+  PencilIcon,
+  Trash2Icon,
+  SearchIcon,
+} from "@lucide/vue";
 
 interface NhaCCViewProps {
   suppliers: NhaCC[];
@@ -56,7 +62,7 @@ const filteredSuppliers = computed(() => {
     (ncc) =>
       ncc.tenNhaCC.toLowerCase().includes(q) ||
       ncc.maNhaCC.toLowerCase().includes(q) ||
-      (ncc.sdtNhaCC && ncc.sdtNhaCC.toLowerCase().includes(q))
+      (ncc.sdtNhaCC && ncc.sdtNhaCC.toLowerCase().includes(q)),
   );
 });
 
@@ -96,7 +102,11 @@ function handleSave() {
 }
 
 function handleDelete(ncc: NhaCC) {
-  if (confirm(`Bạn có chắc muốn xóa nhà cung cấp "${ncc.tenNhaCC}" (${ncc.maNhaCC})?`)) {
+  if (
+    confirm(
+      `Bạn có chắc muốn xóa nhà cung cấp "${ncc.tenNhaCC}" (${ncc.maNhaCC})?`,
+    )
+  ) {
     emit("deleteSupplier", ncc.maNhaCC);
   }
 }
@@ -105,7 +115,9 @@ function handleDelete(ncc: NhaCC) {
 <template>
   <Card class="border-border/60 shadow-xs">
     <CardHeader class="pb-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
           <CardTitle class="text-base font-semibold flex items-center gap-2">
             <TruckIcon class="w-4 h-4 text-primary" />
@@ -123,8 +135,10 @@ function handleDelete(ncc: NhaCC) {
       </div>
 
       <!-- Ô tìm kiếm nhà cung cấp -->
-      <div class="pt-3 max-w-md relative">
-        <SearchIcon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <div class="relative flex-1">
+        <SearchIcon
+          class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           v-model="searchQuery"
           placeholder="Tìm theo tên nhà cung cấp, SĐT hoặc mã NCC..."
@@ -146,21 +160,37 @@ function handleDelete(ncc: NhaCC) {
           </TableHeader>
           <TableBody>
             <TableRow v-if="isLoading">
-              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
+              <TableCell
+                colspan="4"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
                 Đang tải danh sách nhà cung cấp...
               </TableCell>
             </TableRow>
             <TableRow v-else-if="suppliers.length === 0">
-              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
+              <TableCell
+                colspan="4"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
                 Chưa có nhà cung cấp nào.
               </TableCell>
             </TableRow>
             <TableRow v-else-if="filteredSuppliers.length === 0">
-              <TableCell colspan="4" class="text-center py-10 text-muted-foreground text-sm">
-                Không tìm thấy nhà cung cấp nào phù hợp với từ khóa "{{ searchQuery }}".
+              <TableCell
+                colspan="4"
+                class="text-center py-10 text-muted-foreground text-sm"
+              >
+                Không tìm thấy nhà cung cấp nào phù hợp với từ khóa "{{
+                  searchQuery
+                }}".
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="ncc in filteredSuppliers" :key="ncc.maNhaCC" class="hover:bg-muted/40 transition-colors">
+            <TableRow
+              v-else
+              v-for="ncc in filteredSuppliers"
+              :key="ncc.maNhaCC"
+              class="hover:bg-muted/40 transition-colors"
+            >
               <TableCell class="font-mono text-xs font-semibold text-primary">
                 {{ ncc.maNhaCC }}
               </TableCell>
@@ -198,8 +228,13 @@ function handleDelete(ncc: NhaCC) {
       </div>
 
       <!-- Count footer -->
-      <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1">
-        <span>Hiển thị {{ filteredSuppliers.length }} / {{ suppliers.length }} nhà cung cấp</span>
+      <div
+        class="flex items-center justify-between text-xs text-muted-foreground pt-3 px-1"
+      >
+        <span
+          >Hiển thị {{ filteredSuppliers.length }} / {{ suppliers.length }} nhà
+          cung cấp</span
+        >
         <span v-if="searchQuery">Đang lọc theo: "{{ searchQuery }}"</span>
       </div>
     </CardContent>
@@ -208,29 +243,49 @@ function handleDelete(ncc: NhaCC) {
     <Dialog :open="isModalOpen" @update:open="isModalOpen = $event">
       <DialogContent class="sm:max-w-[460px]">
         <DialogHeader>
-          <DialogTitle>{{ editingSupplier ? "Chỉnh sửa Nhà cung cấp" : "Thêm Nhà cung cấp mới" }}</DialogTitle>
+          <DialogTitle>{{
+            editingSupplier ? "Chỉnh sửa Nhà cung cấp" : "Thêm Nhà cung cấp mới"
+          }}</DialogTitle>
           <DialogDescription>
             Điền tên và số điện thoại liên hệ của đối tác cung ứng.
           </DialogDescription>
         </DialogHeader>
 
         <form @submit.prevent="handleSave" class="space-y-4 py-2">
-          <div v-if="formError" class="p-2 text-xs text-destructive bg-destructive/10 rounded">
+          <div
+            v-if="formError"
+            class="p-2 text-xs text-destructive bg-destructive/10 rounded"
+          >
             {{ formError }}
           </div>
 
           <div class="space-y-1.5">
-            <Label for="tenNhaCC">Tên nhà cung cấp <span class="text-destructive">*</span></Label>
-            <Input id="tenNhaCC" v-model="tenNhaCC" placeholder="Ví dụ: Công ty Dược TW 1" required />
+            <Label for="tenNhaCC"
+              >Tên nhà cung cấp <span class="text-destructive">*</span></Label
+            >
+            <Input
+              id="tenNhaCC"
+              v-model="tenNhaCC"
+              placeholder="Ví dụ: Công ty Dược TW 1"
+              required
+            />
           </div>
 
           <div class="space-y-1.5">
             <Label for="sdtNhaCC">Số điện thoại</Label>
-            <Input id="sdtNhaCC" v-model="sdtNhaCC" placeholder="Ví dụ: 02438250000" />
+            <Input
+              id="sdtNhaCC"
+              v-model="sdtNhaCC"
+              placeholder="Ví dụ: 02438250000"
+            />
           </div>
 
           <DialogFooter class="pt-2">
-            <Button type="button" variant="outline" @click="isModalOpen = false">
+            <Button
+              type="button"
+              variant="outline"
+              @click="isModalOpen = false"
+            >
               Hủy
             </Button>
             <Button type="submit">

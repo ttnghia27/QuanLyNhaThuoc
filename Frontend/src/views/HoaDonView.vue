@@ -223,10 +223,49 @@ function formatDate(dateStr: string): string {
                     </CardDescription>
                 </div>
 
-                <Button size="sm" @click="openCreateModal" class="text-xs">
-                    <PlusIcon class="w-3.5 h-3.5 mr-1" />
-                    Lập hóa đơn bán
-                </Button>
+                <div class="flex items-center gap-2 shrink-0">
+                    <div
+                        ref="sortMenuRef"
+                        class="relative"
+                        @keydown.esc="isSortMenuOpen = false"
+                    >
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            aria-haspopup="menu"
+                            aria-controls="invoice-sort-menu"
+                            :aria-expanded="isSortMenuOpen"
+                            @click="isSortMenuOpen = !isSortMenuOpen"
+                        >
+                            Sắp xếp
+                        </Button>
+                        <div
+                            v-if="isSortMenuOpen"
+                            id="invoice-sort-menu"
+                            role="menu"
+                            aria-label="Sắp xếp hóa đơn"
+                            class="absolute right-0 z-50 mt-2 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                        >
+                            <button
+                                v-for="option in sortOptions"
+                                :key="option.value"
+                                type="button"
+                                role="menuitemradio"
+                                :aria-checked="sortBy === option.value"
+                                class="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                                @click="selectSortOption(option.value)"
+                            >
+                                {{ option.label }}
+                                <span v-if="sortBy === option.value" aria-hidden="true">✓</span>
+                            </button>
+                        </div>
+                    </div>
+                    <Button size="sm" @click="openCreateModal" class="text-xs">
+                        <PlusIcon class="w-3.5 h-3.5 mr-1" />
+                        Lập hóa đơn bán
+                    </Button>
+                </div>
             </div>
         </CardHeader>
 
@@ -259,43 +298,6 @@ function formatDate(dateStr: string): string {
                 >
                     Xóa bộ lọc
                 </Button>
-                <div
-                    ref="sortMenuRef"
-                    class="relative sm:ml-auto"
-                    @keydown.esc="isSortMenuOpen = false"
-                >
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        aria-haspopup="menu"
-                        aria-controls="invoice-sort-menu"
-                        :aria-expanded="isSortMenuOpen"
-                        @click="isSortMenuOpen = !isSortMenuOpen"
-                    >
-                        Sắp xếp
-                    </Button>
-                    <div
-                        v-if="isSortMenuOpen"
-                        id="invoice-sort-menu"
-                        role="menu"
-                        aria-label="Sắp xếp hóa đơn"
-                        class="absolute right-0 z-50 mt-2 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-                    >
-                        <button
-                            v-for="option in sortOptions"
-                            :key="option.value"
-                            type="button"
-                            role="menuitemradio"
-                            :aria-checked="sortBy === option.value"
-                            class="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                            @click="selectSortOption(option.value)"
-                        >
-                            {{ option.label }}
-                            <span v-if="sortBy === option.value" aria-hidden="true">✓</span>
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <div class="border rounded-md overflow-x-auto">
