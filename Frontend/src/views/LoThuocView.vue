@@ -25,33 +25,60 @@ import { BoxesIcon, FlameIcon, SearchIcon } from "@lucide/vue";
 interface LoThuocViewProps {
     lots: LoThuoc[];
     isLoading: boolean;
-    conHangOnly: boolean;
 }
 
 const props = defineProps<LoThuocViewProps>();
 
+type LotStatus = "all" | "expired" | "expiring" | "soldOut" | "available";
+
 const emit = defineEmits<{
-    "update:conHangOnly": [value: boolean];
     tieuHuy: [maLo: string, tenThuoc: string, soLuongCon: number];
 }>();
 
 const searchQuery = ref("");
+const statusFilter = ref<LotStatus>("all");
+
+function updateStatusFilter(value: string) {
+  if (
+    value === "all" ||
+    value === "expired" ||
+    value === "expiring" ||
+    value === "soldOut" ||
+    value === "available"
+  ) {
+    statusFilter.value = value;
+  }
+}
+
 function isExpired(expired: Date | string): boolean {
     const DAYS_30 = 30 * 24 * 60 * 60 * 1000;
     const expired_date = new Date(expired);
     const now = new Date();
     return expired_date.getTime() < now.getTime() + DAYS_30;
 }
+
+function getLotStatus(lot: LoThuoc): Exclude<LotStatus, "all"> {
+    if (lot.daHetHan && lot.soLuongCon > 0) return "expired";
+    if (lot.soLuongCon === 0) return "soldOut";
+    if (isExpired(lot.hanSuDung)) return "expiring";
+    return "available";
+}
+
 const filteredLots = computed(() => {
     const q = searchQuery.value.trim().toLowerCase();
-    if (!q) return props.lots;
-    return props.lots.filter(
-        (lot) =>
+    return props.lots.filter((lot) => {
+        const matchesSearch =
+            !q ||
             lot.tenThuoc?.toLowerCase().includes(q) ||
             lot.maThuoc?.toLowerCase().includes(q) ||
             lot.maLo?.toLowerCase().includes(q) ||
-            lot.maPhieuNhap?.toLowerCase().includes(q),
-    );
+            lot.maPhieuNhap?.toLowerCase().includes(q);
+        const matchesStatus =
+            statusFilter.value === "all" ||
+            getLotStatus(lot) === statusFilter.value;
+
+        return matchesSearch && matchesStatus;
+    });
 });
 
 function formatCurrency(val: number): string {
@@ -100,15 +127,18 @@ function handleTieuHuy(lot: LoThuoc) {
 
                 <div class="w-48 shrink-0">
                     <Select
-                        :model-value="conHangOnly ? 'true' : 'false'"
-                        @update:model-value="emit('update:conHangOnly', $event === 'true')"
+                        :model-value="statusFilter"
+                        @update:model-value="updateStatusFilter(String($event))"
                     >
                         <SelectTrigger class="h-9 text-xs">
-                            <SelectValue placeholder="Lọc tồn lô" />
+                            <SelectValue placeholder="Lọc trạng thái" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="false">Tất cả lô thuốc</SelectItem>
-                            <SelectItem value="true">Chỉ lô còn hàng (&gt; 0)</SelectItem>
+                            <SelectItem value="all">Tất cả lô thuốc</SelectItem>
+                            <SelectItem value="expired">Đã hết hạn</SelectItem>
+                            <SelectItem value="expiring">Sắp hết hạn</SelectItem>
+                            <SelectItem value="soldOut">Đã xuất hết</SelectItem>
+                            <SelectItem value="available">Khả dụng</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -166,7 +196,7 @@ function handleTieuHuy(lot: LoThuoc) {
                                 colspan="10"
                                 class="text-center py-10 text-muted-foreground text-sm"
                             >
-                                Không tìm thấy lô thuốc nào cho từ khóa "{{ searchQuery }}".
+                                Không tìm thấy lô thuốc nào phù hợp với tiêu chí đã chọn.
                             </TableCell>
                         </TableRow>
                         <TableRow
@@ -201,21 +231,21 @@ function handleTieuHuy(lot: LoThuoc) {
                             </TableCell>
                             <TableCell class="text-center">
                                 <Badge
-                                    v-if="lot.daHetHan && lot.soLuongCon > 0"
+                                    v-if="getLotStatus(lot) === 'expired'"
                                     variant="destructive"
                                     class="text-[10px] px-1.5 py-0.5"
                                 >
                                     Đã hết hạn
                                 </Badge>
                                 <Badge
-                                    v-else-if="lot.soLuongCon === 0"
+                                    v-else-if="getLotStatus(lot) === 'soldOut'"
                                     variant="secondary"
                                     class="text-[10px] px-1.5 py-0.5"
                                 >
                                     Đã xuất hết
                                 </Badge>
                                 <Badge
-                                    v-else-if="isExpired(lot.hanSuDung)"
+                                    v-else-if="getLotStatus(lot) === 'expiring'"
                                     class="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-800 border-amber-300"
                                     >Sắp hết hạn</Badge
                                 >
@@ -251,6 +281,9 @@ function handleTieuHuy(lot: LoThuoc) {
                 <span v-if="searchQuery"
                     >Đang lọc theo tên thuốc / từ khóa: "{{ searchQuery }}"</span
                 >
+                <span v-else-if="statusFilter !== 'all'">
+                    Đang lọc theo trạng thái
+                </span>
             </div>
         </CardContent>
     </Card>

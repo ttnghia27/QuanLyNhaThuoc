@@ -59,7 +59,6 @@ const isSuppliersLoading = ref(false);
 
 const lots = ref<LoThuoc[]>([]);
 const isLotsLoading = ref(false);
-const conHangOnly = ref(false);
 
 const invoices = ref<HoaDon[]>([]);
 const isInvoicesLoading = ref(false);
@@ -193,7 +192,7 @@ async function loadSuppliers() {
 async function loadLots() {
     isLotsLoading.value = true;
     try {
-        lots.value = await pharmacyApi.getLoThuoc({ conHangOnly: conHangOnly.value });
+        lots.value = await pharmacyApi.getLoThuoc();
     } catch (err) {
         console.error("Lỗi khi tải lô thuốc:", err);
     } finally {
@@ -464,10 +463,6 @@ watch(selectedDrugCategory, () => {
     loadDrugs();
 });
 
-watch(conHangOnly, () => {
-    loadLots();
-});
-
 onMounted(() => {
     loadAllData();
 });
@@ -613,7 +608,6 @@ onMounted(() => {
                     v-else-if="currentTab === 'lo-thuoc'"
                     :lots="lots"
                     :is-loading="isLotsLoading"
-                    v-model:con-hang-only="conHangOnly"
                     @tieu-huy="handleTieuHuyLot"
                 />
 
