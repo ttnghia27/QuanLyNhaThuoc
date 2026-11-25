@@ -41,6 +41,8 @@ const selectedStatsMonths = ref<ThongKeMonths>(1);
 
 const revenueChartData = ref<ThongKeDoanhThuItem[]>([]);
 const isChartLoading = ref(false);
+const isExportingRevenueReport = ref(false);
+const monthlyRevenueReportError = ref("");
 
 const drugs = ref<Thuoc[]>([]);
 const isDrugsLoading = ref(false);
@@ -137,6 +139,67 @@ async function handleStatsMonthsChange(months: ThongKeMonths) {
 
     selectedStatsMonths.value = months;
     await Promise.all([loadStats(), loadRevenueChart()]);
+}
+
+async function exportMonthlyRevenueReport() {
+    monthlyRevenueReportError.value = "";
+    isExportingRevenueReport.value = true;
+
+    try {
+        const endDate = new Date();
+        const denNgay = formatApiDate(endDate);
+        const startDate = new Date(endDate);
+        startDate.setDate(startDate.getDate() - 364);
+        const tuNgay = formatApiDate(startDate);
+        const dailyRevenue = await pharmacyApi.getThongKeDoanhThu(tuNgay, denNgay);
+
+        const monthlyTotals = new Map<string, { label: string; total: number }>();
+        const monthCursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+        const lastMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+
+        while (monthCursor <= lastMonth) {
+            const monthKey = `${monthCursor.getFullYear()}-${String(monthCursor.getMonth() + 1).padStart(2, "0")}`;
+            const label = `${String(monthCursor.getMonth() + 1).padStart(2, "0")}/${monthCursor.getFullYear()}`;
+            monthlyTotals.set(monthKey, { label, total: 0 });
+            monthCursor.setMonth(monthCursor.getMonth() + 1);
+        }
+
+        for (const item of dailyRevenue) {
+            const month = monthlyTotals.get(item.ngay.slice(0, 7));
+            if (month) month.total += item.doanhThu;
+        }
+
+        const months = Array.from(monthlyTotals.values());
+        const totalRevenue = months.reduce((total, month) => total + month.total, 0);
+        const rows: (string | number)[][] = [
+            ["Tháng", "Doanh thu"],
+            ...months.map((month) => [month.label, month.total]),
+            ["Tổng 365 ngày", totalRevenue],
+        ];
+        const XLSX = await import("xlsx");
+        const worksheet = XLSX.utils.aoa_to_sheet(rows);
+        worksheet["!cols"] = [{ wch: 16 }, { wch: 24 }];
+
+        for (let row = 2; row <= rows.length; row += 1) {
+            const revenueCell = worksheet[`B${row}`];
+            if (revenueCell) revenueCell.z = '#,##0 "₫"';
+        }
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "DoanhThuTheoThang");
+        XLSX.writeFile(
+            workbook,
+            `bao-cao-doanh-thu-theo-thang_${tuNgay}_${denNgay}.xlsx`,
+        );
+    } catch (error: unknown) {
+        console.error("Lỗi khi xuất báo cáo doanh thu theo tháng:", error);
+        monthlyRevenueReportError.value =
+            error instanceof Error
+                ? `Không thể xuất báo cáo doanh thu: ${error.message}`
+                : "Không thể xuất báo cáo doanh thu.";
+    } finally {
+        isExportingRevenueReport.value = false;
+    }
 }
 
 async function loadCategories() {
@@ -546,7 +609,10 @@ onMounted(() => {
                     :revenue-chart-data="revenueChartData"
                     :is-chart-loading="isChartLoading"
                     :months="selectedStatsMonths"
+                    :is-exporting-revenue-report="isExportingRevenueReport"
+                    :monthly-revenue-report-error="monthlyRevenueReportError"
                     @update:months="handleStatsMonthsChange"
+                    @export-monthly-revenue="exportMonthlyRevenueReport"
                 />
 
                 <!-- Tab 2: Thuốc CRUD -->
