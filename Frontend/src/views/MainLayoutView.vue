@@ -187,10 +187,7 @@ async function exportMonthlyRevenueReport() {
 
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "DoanhThuTheoThang");
-        XLSX.writeFile(
-            workbook,
-            `bao-cao-doanh-thu-theo-thang_${tuNgay}_${denNgay}.xlsx`,
-        );
+        XLSX.writeFile(workbook, `bao-cao-doanh-thu-theo-thang_${tuNgay}_${denNgay}.xlsx`);
     } catch (error: unknown) {
         console.error("Lỗi khi xuất báo cáo doanh thu theo tháng:", error);
         monthlyRevenueReportError.value =

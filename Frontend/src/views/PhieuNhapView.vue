@@ -283,7 +283,8 @@ async function exportMonthlyImportTotals() {
                 <p v-if="exportError" role="alert" class="mb-3 text-xs text-destructive">
                     {{ exportError }}
                 </p>
-                <div class="flex items-center gap-2 shrink-0">
+
+                <div class="flex flex-col items-end gap-2 shrink-0">
                     <Button
                         type="button"
                         variant="outline"
@@ -295,43 +296,49 @@ async function exportMonthlyImportTotals() {
                         <FileDownIcon class="mr-1 h-3.5 w-3.5" />
                         {{ isExporting ? "Đang xuất..." : "Xuất Excel" }}
                     </Button>
-                    <div ref="sortMenuRef" class="relative" @keydown.esc="isSortMenuOpen = false">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            aria-haspopup="menu"
-                            aria-controls="receipt-sort-menu"
-                            :aria-expanded="isSortMenuOpen"
-                            @click="isSortMenuOpen = !isSortMenuOpen"
-                        >
-                            Sắp xếp
-                        </Button>
+                    <div class="flex gap-2.5">
                         <div
-                            v-if="isSortMenuOpen"
-                            id="receipt-sort-menu"
-                            role="menu"
-                            aria-label="Sắp xếp phiếu nhập"
-                            class="absolute right-0 z-50 mt-2 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                            ref="sortMenuRef"
+                            class="relative"
+                            @keydown.esc="isSortMenuOpen = false"
                         >
-                            <button
-                                v-for="option in sortOptions"
-                                :key="option.value"
+                            <Button
                                 type="button"
-                                role="menuitemradio"
-                                :aria-checked="sortBy === option.value"
-                                class="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                                @click="selectSortOption(option.value)"
+                                variant="outline"
+                                size="sm"
+                                aria-haspopup="menu"
+                                aria-controls="receipt-sort-menu"
+                                :aria-expanded="isSortMenuOpen"
+                                @click="isSortMenuOpen = !isSortMenuOpen"
                             >
-                                {{ option.label }}
-                                <span v-if="sortBy === option.value" aria-hidden="true">✓</span>
-                            </button>
+                                Sắp xếp
+                            </Button>
+                            <div
+                                v-if="isSortMenuOpen"
+                                id="receipt-sort-menu"
+                                role="menu"
+                                aria-label="Sắp xếp phiếu nhập"
+                                class="absolute right-0 z-50 mt-2 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                            >
+                                <button
+                                    v-for="option in sortOptions"
+                                    :key="option.value"
+                                    type="button"
+                                    role="menuitemradio"
+                                    :aria-checked="sortBy === option.value"
+                                    class="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                                    @click="selectSortOption(option.value)"
+                                >
+                                    {{ option.label }}
+                                    <span v-if="sortBy === option.value" aria-hidden="true">✓</span>
+                                </button>
+                            </div>
                         </div>
+                        <Button size="sm" @click="openCreateModal" class="text-xs">
+                            <PlusIcon class="w-3.5 h-3.5 mr-1" />
+                            Tạo phiếu nhập mới
+                        </Button>
                     </div>
-                    <Button size="sm" @click="openCreateModal" class="text-xs">
-                        <PlusIcon class="w-3.5 h-3.5 mr-1" />
-                        Tạo phiếu nhập mới
-                    </Button>
                 </div>
             </div>
         </CardHeader>
