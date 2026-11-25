@@ -23,8 +23,8 @@ Request:
 
 ```json
 {
-  "tenDangNhap": "admin",
-  "matKhau": "your-password"
+    "tenDangNhap": "admin",
+    "matKhau": "your-password"
 }
 ```
 
@@ -32,8 +32,8 @@ Thành công `200 OK`:
 
 ```json
 {
-  "token": "<jwt>",
-  "hoTen": "Nguyễn Văn A"
+    "token": "<jwt>",
+    "hoTen": "Nguyễn Văn A"
 }
 ```
 
@@ -41,7 +41,7 @@ Sai thông tin `401 Unauthorized`:
 
 ```json
 {
-  "message": "Sai tên đăng nhập hoặc mật khẩu"
+    "message": "Sai tên đăng nhập hoặc mật khẩu"
 }
 ```
 
@@ -53,11 +53,11 @@ Lấy danh sách loại thuốc:
 
 ```json
 [
-  {
-    "maLoai": "LT001",
-    "tenLoai": "Thuốc giảm đau",
-    "soLuongThuoc": 12
-  }
+    {
+        "maLoai": "LT001",
+        "tenLoai": "Thuốc giảm đau",
+        "soLuongThuoc": 12
+    }
 ]
 ```
 
@@ -93,10 +93,10 @@ Trả `404` nếu không tìm thấy; `400` nếu loại đang có thuốc trự
 
 Lấy danh sách thuốc. Query tùy chọn:
 
-| Tham số | Ý nghĩa |
-|---|---|
+| Tham số  | Ý nghĩa                                              |
+| -------- | ---------------------------------------------------- |
 | `search` | Tìm gần đúng theo tên thuốc, mã thuốc hoặc công dụng |
-| `maLoai` | Lọc chính xác theo mã loại |
+| `maLoai` | Lọc chính xác theo mã loại                           |
 
 Ví dụ: `/api/Thuoc?search=para&maLoai=LT001`
 
@@ -112,10 +112,10 @@ Tạo thuốc. Tồn kho ban đầu tự đặt bằng 0; kho tăng khi tạo ph
 
 ```json
 {
-  "tenThuoc": "Paracetamol 500mg",
-  "congDung": "Hạ sốt, giảm đau",
-  "donGiaBan": 2500,
-  "maLoai": "LT001"
+    "tenThuoc": "Paracetamol 500mg",
+    "congDung": "Hạ sốt, giảm đau",
+    "donGiaBan": 2500,
+    "maLoai": "LT001"
 }
 ```
 
@@ -137,7 +137,7 @@ Lấy danh sách khách hàng. Query `search` tùy chọn, tìm theo tên hoặc
 
 `/api/KhachHang?search=0901`
 
-Mỗi phần tử là entity khách hàng: `maKH`, `tenKH`, `sdtKH`, `diaChiKH`.
+Mỗi phần tử là entity khách hàng: `maKH`, `tenKH`, `sdtkh`, `diaChiKH`.
 
 ### `GET /api/KhachHang/{id}`
 
@@ -147,9 +147,9 @@ Lấy khách hàng theo mã, kèm danh sách hóa đơn liên quan. Không tìm 
 
 ```json
 {
-  "tenKH": "Nguyễn Văn A",
-  "sdtKH": "0901234567",
-  "diaChiKH": "Quận 1, TP.HCM"
+    "tenKH": "Nguyễn Văn A",
+    "sdtKH": "0901234567",
+    "diaChiKH": "Quận 1, TP.HCM"
 }
 ```
 
@@ -177,8 +177,8 @@ Lấy nhà cung cấp theo mã. Không tìm thấy trả `404`.
 
 ```json
 {
-  "tenNhaCC": "Công ty Dược ABC",
-  "sdtNhaCC": "0281234567"
+    "tenNhaCC": "Công ty Dược ABC",
+    "sdtNhaCC": "0281234567"
 }
 ```
 
@@ -198,10 +198,10 @@ Xóa nhà cung cấp. Thành công trả `{ "message": "Xóa thành công" }`. T
 
 Lấy danh sách lô, sắp xếp theo hạn sử dụng. Query tùy chọn:
 
-| Tham số | Mặc định | Ý nghĩa |
-|---|---:|---|
-| `maThuoc` | — | Lọc chính xác theo mã thuốc |
-| `conHangOnly` | `false` | Nếu `true`, chỉ lấy lô có `soLuongCon > 0` |
+| Tham số       | Mặc định | Ý nghĩa                                    |
+| ------------- | -------: | ------------------------------------------ |
+| `maThuoc`     |        — | Lọc chính xác theo mã thuốc                |
+| `conHangOnly` |  `false` | Nếu `true`, chỉ lấy lô có `soLuongCon > 0` |
 
 Mỗi phần tử gồm `maLo`, `maThuoc`, `tenThuoc`, `maPhieuNhap`, `ngayNhapKho`, `hanSuDung`, `soLuongNhap`, `soLuongCon`, `donGiaNhap`, `daHetHan`.
 
@@ -241,16 +241,16 @@ Tạo phiếu nhập và tự tạo một lô cho từng dòng chi tiết. Ngày
 
 ```json
 {
-  "maNhaCC": "NCC001",
-  "ngayNhap": "2026-11-18",
-  "chiTiet": [
-    {
-      "maThuoc": "T001",
-      "soLuongNhap": 100,
-      "donGiaNhap": 1200,
-      "hanSuDung": "2027-11-18"
-    }
-  ]
+    "maNhaCC": "NCC001",
+    "ngayNhap": "2026-11-18",
+    "chiTiet": [
+        {
+            "maThuoc": "T001",
+            "soLuongNhap": 100,
+            "donGiaNhap": 1200,
+            "hanSuDung": "2027-11-18"
+        }
+    ]
 }
 ```
 
@@ -276,11 +276,11 @@ Tạo hóa đơn. Giá bán lấy theo giá hiện tại của thuốc. Hệ th�
 
 ```json
 {
-  "maKH": "KH001",
-  "chiTiet": [
-    { "maThuoc": "T001", "soLuongBan": 2 },
-    { "maThuoc": "T002", "soLuongBan": 1 }
-  ]
+    "maKH": "KH001",
+    "chiTiet": [
+        { "maThuoc": "T001", "soLuongBan": 2 },
+        { "maThuoc": "T002", "soLuongBan": 1 }
+    ]
 }
 ```
 
@@ -296,14 +296,14 @@ Không cần query. Response:
 
 ```json
 {
-  "doanhThuHomNay": 0,
-  "tongDoanhThu": 0,
-  "tongTienNhap": 0,
-  "loiNhuanUocTinh": 0,
-  "soHoaDon": 0,
-  "soLoaiThuoc": 0,
-  "thuocSapHetHang": 0,
-  "loSapHetHan": 0
+    "doanhThuHomNay": 0,
+    "tongDoanhThu": 0,
+    "tongTienNhap": 0,
+    "loiNhuanUocTinh": 0,
+    "soHoaDon": 0,
+    "soLoaiThuoc": 0,
+    "thuocSapHetHang": 0,
+    "loSapHetHan": 0
 }
 ```
 
@@ -313,10 +313,10 @@ Không cần query. Response:
 
 Thống kê doanh thu và số hóa đơn theo ngày. Query tùy chọn:
 
-| Tham số | Mặc định |
-|---|---|
-| `tuNgay` | 7 ngày trước, tính từ đầu ngày |
-| `denNgay` | Hôm nay, tính hết ngày |
+| Tham số   | Mặc định                       |
+| --------- | ------------------------------ |
+| `tuNgay`  | 7 ngày trước, tính từ đầu ngày |
+| `denNgay` | Hôm nay, tính hết ngày         |
 
 Ví dụ: `/api/ThongKe/doanh-thu?tuNgay=2026-11-01&denNgay=2026-11-18`
 
@@ -324,11 +324,11 @@ Response là mảng:
 
 ```json
 [
-  {
-    "ngay": "2026-11-18T00:00:00",
-    "soHoaDon": 3,
-    "doanhThu": 125000
-  }
+    {
+        "ngay": "2026-11-18T00:00:00",
+        "soHoaDon": 3,
+        "doanhThu": 125000
+    }
 ]
 ```
 

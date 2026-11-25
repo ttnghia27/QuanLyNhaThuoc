@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyNhaThuoc.API.Data;
 using QuanLyNhaThuoc.API.DTOs;
 using QuanLyNhaThuoc.API.Services;
 
@@ -8,79 +6,34 @@ namespace QuanLyNhaThuoc.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PhieuNhapController : ControllerBase
+public sealed class PhieuNhapController : ControllerBase
 {
     private readonly PhieuNhapService _service;
-    private readonly ApplicationDbContext _context;
 
-    public PhieuNhapController(PhieuNhapService service, ApplicationDbContext context)
+    public PhieuNhapController(PhieuNhapService service)
     {
         _service = service;
-        _context = context;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var list = await _context.PhieuNhaps
-            .Include(x => x.NhaCC)
-            .OrderByDescending(x => x.NgayNhap)
-            .Select(x => new
-            {
-                x.MaPhieuNhap,
-                x.NgayNhap,
-                x.TongTien,
-                x.MaNhaCC,
-                TenNhaCC = x.NhaCC.TenNhaCC
-            })
-            .ToListAsync();
-
-        return Ok(list);
+        return Ok(await _service.GetAllAsync());
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
-        var pn = await _context.PhieuNhaps
-            .Include(x => x.NhaCC)
-            .Include(x => x.LoThuocs)
-                .ThenInclude(l => l.Thuoc)
-            .FirstOrDefaultAsync(x => x.MaPhieuNhap == id);
+        var result = await _service.GetByIdAsync(id);
+        if (result == null)
+            return NotFound(new { message = "Không tìm thấy phiếu nhập" });
 
-        if (pn == null) return NotFound(new { message = "Không tìm thấy phiếu nhập" });
-
-        return Ok(new
-        {
-            pn.MaPhieuNhap,
-            pn.NgayNhap,
-            pn.TongTien,
-            pn.MaNhaCC,
-            TenNhaCC = pn.NhaCC.TenNhaCC,
-            ChiTietLo = pn.LoThuocs.Select(l => new
-            {
-                l.MaLo,
-                l.MaThuoc,
-                TenThuoc = l.Thuoc.TenThuoc,
-                l.HanSuDung,
-                l.SoLuongNhap,
-                l.SoLuongCon,
-                l.DonGiaNhap,
-                ThanhTien = l.SoLuongNhap * l.DonGiaNhap
-            })
-        });
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePhieuNhapRequest request)
     {
-        try
-        {
-            var result = await _service.CreateAsync(request);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        return Ok(await _service.CreateAsync(request));
     }
 }

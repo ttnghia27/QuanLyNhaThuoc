@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -16,8 +17,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Services
 builder.Services.AddScoped<CodeGenerator>();
-builder.Services.AddScoped<PhieuNhapService>();
+builder.Services.AddScoped<StoredProcedureExecutor>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<CanhBaoService>();
 builder.Services.AddScoped<HoaDonService>();
+builder.Services.AddScoped<KhachHangService>();
+builder.Services.AddScoped<LoaiThuocService>();
+builder.Services.AddScoped<LoThuocService>();
+builder.Services.AddScoped<NhaCCService>();
+builder.Services.AddScoped<PhieuNhapService>();
+builder.Services.AddScoped<ThongKeService>();
+builder.Services.AddScoped<ThuocService>();
 
 // JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -36,9 +46,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 builder.Services.AddControllers()
+    .AddMvcOptions(options => options.Filters.Add(new BusinessRuleExceptionFilter()))
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -88,7 +104,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.EnsureCreatedAsync();
+    await DbSeeder.SeedAdminUserAsync(dbContext);
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from "vue-router";
 import {
   LayoutDashboardIcon,
   PillIcon,
@@ -8,7 +9,9 @@ import {
   BoxesIcon,
   ReceiptIcon,
   FileDownIcon,
+  LogOutIcon,
 } from "@lucide/vue";
+import { clearAuthSession } from "@/services/api";
 
 export type NavTab =
   | "dashboard"
@@ -29,6 +32,13 @@ defineProps<SidebarProps>();
 const emit = defineEmits<{
   selectTab: [tab: NavTab];
 }>();
+
+const router = useRouter();
+
+function handleLogout() {
+  clearAuthSession();
+  router.push("/login");
+}
 
 const menuItems: { id: NavTab; label: string; icon: any; countKey?: string; description: string }[] = [
   {
@@ -123,9 +133,20 @@ const menuItems: { id: NavTab; label: string; icon: any; countKey?: string; desc
     </div>
 
     <!-- Sidebar footer -->
-    <div class="p-4 border-t border-border/80 text-[11px] text-muted-foreground/80 flex items-center justify-between">
-      <span>API: http://localhost:5238</span>
-      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+    <div class="p-4 border-t border-border/80 flex flex-col gap-2">
+      <button
+        type="button"
+        @click="handleLogout"
+        class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors text-left"
+      >
+        <LogOutIcon class="w-4 h-4 shrink-0" />
+        <span>Đăng xuất</span>
+      </button>
+
+      <div class="text-[11px] text-muted-foreground/80 flex items-center justify-between px-1">
+        <span>API: http://localhost:5238</span>
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+      </div>
     </div>
   </aside>
 </template>

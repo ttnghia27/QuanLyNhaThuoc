@@ -1,93 +1,58 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyNhaThuoc.API.Data;
 using QuanLyNhaThuoc.API.DTOs;
-using QuanLyNhaThuoc.API.Helpers;
-using QuanLyNhaThuoc.API.Models;
+using QuanLyNhaThuoc.API.Services;
 
 namespace QuanLyNhaThuoc.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class KhachHangController : ControllerBase
+public sealed class KhachHangController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly CodeGenerator _codeGen;
+    private readonly KhachHangService _service;
 
-    public KhachHangController(ApplicationDbContext context, CodeGenerator codeGen)
+    public KhachHangController(KhachHangService service)
     {
-        _context = context;
-        _codeGen = codeGen;
+        _service = service;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
-        var query = _context.KhachHangs.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            query = query.Where(x => x.TenKH.Contains(search)
-                                  || (x.SDTKH != null && x.SDTKH.Contains(search)));
-        }
-
-        return Ok(await query.ToListAsync());
+        return Ok(await _service.GetAllAsync(search));
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
-        var kh = await _context.KhachHangs
-            .Include(x => x.HoaDons)
-            .FirstOrDefaultAsync(x => x.MaKH == id);
+        var result = await _service.GetByIdAsync(id);
+        if (result == null)
+            return NotFound(new { message = "Không tìm thấy khách hàng" });
 
-        if (kh == null) return NotFound(new { message = "Không tìm thấy khách hàng" });
-        return Ok(kh);
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] KhachHangDto dto)
     {
-        var entity = new KhachHang
-        {
-            MaKH = await _codeGen.GenerateMaKHAsync(),
-            TenKH = dto.TenKH.Trim(),
-            SDTKH = dto.SDTKH?.Trim(),
-            DiaChiKH = dto.DiaChiKH?.Trim()
-        };
-
-        _context.KhachHangs.Add(entity);
-        await _context.SaveChangesAsync();
-        return Ok(entity);
+        return Ok(await _service.CreateAsync(dto));
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(string id, [FromBody] KhachHangDto dto)
     {
-        var entity = await _context.KhachHangs.FindAsync(id);
-        if (entity == null) return NotFound(new { message = "Không tìm thấy khách hàng" });
+        var result = await _service.UpdateAsync(id, dto);
+        if (result == null)
+            return NotFound(new { message = "Không tìm thấy khách hàng" });
 
-        entity.TenKH = dto.TenKH.Trim();
-        entity.SDTKH = dto.SDTKH?.Trim();
-        entity.DiaChiKH = dto.DiaChiKH?.Trim();
-
-        await _context.SaveChangesAsync();
-        return Ok(entity);
+        return Ok(result);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        var entity = await _context.KhachHangs
-            .Include(x => x.HoaDons)
-            .FirstOrDefaultAsync(x => x.MaKH == id);
+        if (!await _service.DeleteAsync(id))
+            return NotFound(new { message = "Không tìm thấy khách hàng" });
 
-        if (entity == null) return NotFound(new { message = "Không tìm thấy khách hàng" });
-        if (entity.HoaDons.Any())
-            return BadRequest(new { message = "Không thể xóa khách hàng đã có hóa đơn" });
-
-        _context.KhachHangs.Remove(entity);
-        await _context.SaveChangesAsync();
         return Ok(new { message = "Xóa thành công" });
     }
 }

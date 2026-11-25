@@ -1,40 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyNhaThuoc.API.Data;
+using QuanLyNhaThuoc.API.Services;
 
 namespace QuanLyNhaThuoc.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CanhBaoController : ControllerBase
+public sealed class CanhBaoController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly CanhBaoService _service;
 
-    public CanhBaoController(ApplicationDbContext context)
+    public CanhBaoController(CanhBaoService service)
     {
-        _context = context;
+        _service = service;
     }
 
     [HttpGet("sap-het-han")]
-    public async Task<IActionResult> GetSapHetHan(int soNgay = 30)
+    public async Task<IActionResult> GetSapHetHan([FromQuery] int soNgay = 30)
     {
-        var ngayCanhBao = DateTime.Today.AddDays(soNgay);
-
-        var result = await _context.LoThuocs
-            .Include(x => x.Thuoc)
-            .Where(x => x.SoLuongCon > 0 && x.HanSuDung <= ngayCanhBao)
-            .OrderBy(x => x.HanSuDung)
-            .Select(x => new
-            {
-                x.MaLo,
-                x.MaThuoc,
-                TenThuoc = x.Thuoc.TenThuoc,
-                x.HanSuDung,
-                SoNgayConLai = (x.HanSuDung - DateTime.Today).Days,
-                x.SoLuongCon
-            })
-            .ToListAsync();
-
-        return Ok(result);
+        return Ok(await _service.GetSapHetHanAsync(soNgay));
     }
 }

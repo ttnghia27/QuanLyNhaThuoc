@@ -162,15 +162,40 @@ pnpm dlx shadcn-vue@latest add [Components]
 - Do not guess endpoint paths, field names, nullability, or enum values. Inspect the existing backend implementation or API documentation first.
 - Keep frontend API calls in a dedicated service/API layer where the project structure supports it.
 - Handle backend validation errors and non-success responses in a predictable way.
-- Read `API-docs.md` at the project root.
-- Treat `API-docs.md` as the primary reference for API endpoints, request parameters, response schemas, and authentication.
+- Read `API-DOCS.md` at the project root.
+- Treat `API-DOCS.md` as the primary reference for API endpoints, request parameters, response schemas, and authentication.
 - Do not invent API endpoints, HTTP methods, request fields,
   response fields, or status codes.
 - Ensure frontend TypeScript interfaces match the documented API contracts.
 - If the API documentation conflicts with the actual C# backend
   implementation, inspect the backend and report the discrepancy.
 - Update the frontend API service layer consistently with the documentation.
-- Always consult `API-docs.md` before writing API integration code.
+- Always consult `API-DOCS.md` before writing API integration code.
+
+## Current application architecture
+
+### Frontend responsibilities
+
+- `Frontend/src/App.vue` is the application shell: it owns page-level state, loads data, calls the API client, and passes data/actions to views.
+- `Frontend/src/views/` contains screen-level components. Prefer typed props and emits; keep HTTP calls out of views.
+- `Frontend/src/components/` contains reusable UI and feature components.
+- `Frontend/src/services/api.ts` is the frontend HTTP boundary. Add or update endpoint calls there rather than introducing component-level `fetch` calls.
+- `Frontend/src/type.ts` contains shared API and feature types. Keep those shapes aligned with the backend DTOs and `API-DOCS.md`.
+
+### Backend responsibilities
+
+- `Backend/QuanLyNhaThuoc.API/Program.cs` is the composition root: configure the `DbContext`, dependency injection, authentication, filters, and middleware there.
+- `Controllers/` handles HTTP concerns only: bind route/query/body values, call the corresponding service, and translate results into documented HTTP responses. Do not put EF Core queries, transactions, or business workflows in controllers.
+- `Services/` owns application/business operations and data access. Keep service methods asynchronous and scoped to the feature they serve.
+- `DTOs/` defines request and response contracts; `Models/` and `Data/ApplicationDbContext.cs` define persistence entities and EF Core mappings.
+- `Helpers/CodeGenerator.cs` uses the database scalar functions for generated identifiers. Reuse it rather than duplicating identifier-generation logic.
+- `Services/StoredProcedureExecutor.cs` is the SQL Server boundary for documented stored procedures. Use parameterized procedure parameters; do not build SQL from request values.
+- `BusinessRuleException` represents expected business failures and `BusinessRuleExceptionFilter` maps them to the API's `400` `{ "message": "..." }` response. Return `null` for a missing entity when the controller needs to return `404`. Avoid broad catches that turn unexpected infrastructure failures into successful or business-error responses.
+- Use the stored procedures and triggers described in `SQL-DOCS.md` for the workflows they own. Do not repeat side effects that the database already performs, such as stock and total updates.
+
+The normal request flow is:
+
+`Vue view -> App.vue -> Frontend/src/services/api.ts -> API controller -> feature service -> ApplicationDbContext or SQL Server routine`
 
 ## General implementation practices
 
