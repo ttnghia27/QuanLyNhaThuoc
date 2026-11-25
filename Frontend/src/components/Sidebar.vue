@@ -101,14 +101,14 @@ const menuItems: { id: NavTab; label: string; icon: any; countKey?: string; desc
           <PillIcon class="w-5 h-5" />
         </div>
         <div>
-          <h2 class="text-sm font-bold tracking-tight">PharmaCare</h2>
-          <p class="text-[11px] text-muted-foreground">Hệ thống Quản lý Nhà thuốc</p>
+          <h2 class="text-sm font-semibold tracking-tight">PharmaCare</h2>
+          <p class="text-xs text-muted-foreground">Hệ thống Quản lý Nhà thuốc</p>
         </div>
       </div>
 
       <!-- Navigation Links -->
       <nav class="space-y-1">
-        <p class="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+        <p class="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
           Danh mục & Dữ liệu
         </p>
 
@@ -143,7 +143,7 @@ const menuItems: { id: NavTab; label: string; icon: any; countKey?: string; desc
         <span>Đăng xuất</span>
       </button>
 
-      <div class="text-[11px] text-muted-foreground/80 flex items-center justify-between px-1">
+      <div class="text-xs text-muted-foreground/80 flex items-center justify-between px-1">
         <span>API: http://localhost:5238</span>
         <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" />
       </div>

@@ -590,7 +590,7 @@ onMounted(() => {
                 <!-- Success toast -->
                 <div
                     v-if="successMessage"
-                    class="border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-lg p-3.5 flex items-center gap-2 text-sm shadow-xs"
+                    class="border border-emerald-500/30 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-lg p-3.5 flex items-center gap-2 text-sm shadow-xs"
                 >
                     <CheckCircle2Icon
                         class="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400"

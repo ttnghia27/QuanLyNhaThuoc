@@ -176,7 +176,9 @@ pnpm dlx shadcn-vue@latest add [Components]
 
 ### Frontend responsibilities
 
-- `Frontend/src/App.vue` is the application shell: it owns page-level state, loads data, calls the API client, and passes data/actions to views.
+- `Frontend/src/App.vue` renders the active Vue Router route; it does not own feature data.
+- `Frontend/src/router/index.ts` defines routes and the client-side authentication guard. The root route renders `Frontend/src/views/MainLayoutView.vue`.
+- `MainLayoutView.vue` is the authenticated application shell: it owns navigation and feature data/loading state, calls the API client, and passes data/actions to screen views.
 - `Frontend/src/views/` contains screen-level components. Prefer typed props and emits; keep HTTP calls out of views.
 - `Frontend/src/components/` contains reusable UI and feature components.
 - `Frontend/src/services/api.ts` is the frontend HTTP boundary. Add or update endpoint calls there rather than introducing component-level `fetch` calls.
@@ -185,6 +187,7 @@ pnpm dlx shadcn-vue@latest add [Components]
 ### Backend responsibilities
 
 - `Backend/QuanLyNhaThuoc.API/Program.cs` is the composition root: configure the `DbContext`, dependency injection, authentication, filters, and middleware there.
+- `Program.cs` applies a fallback authorization policy requiring an authenticated user. Keep new API endpoints protected by default; mark only intentional public endpoints (such as login) with `[AllowAnonymous]`, and document the contract in `API-DOCS.md`.
 - `Controllers/` handles HTTP concerns only: bind route/query/body values, call the corresponding service, and translate results into documented HTTP responses. Do not put EF Core queries, transactions, or business workflows in controllers.
 - `Services/` owns application/business operations and data access. Keep service methods asynchronous and scoped to the feature they serve.
 - `DTOs/` defines request and response contracts; `Models/` and `Data/ApplicationDbContext.cs` define persistence entities and EF Core mappings.
@@ -195,7 +198,7 @@ pnpm dlx shadcn-vue@latest add [Components]
 
 The normal request flow is:
 
-`Vue view -> App.vue -> Frontend/src/services/api.ts -> API controller -> feature service -> ApplicationDbContext or SQL Server routine`
+`Vue route -> MainLayoutView.vue -> screen view -> Frontend/src/services/api.ts -> API controller -> feature service -> ApplicationDbContext or SQL Server routine`
 
 ## General implementation practices
 

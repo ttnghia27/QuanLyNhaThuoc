@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { onClickOutside } from "@vueuse/core";
+import type { AcceptableValue } from "reka-ui";
 import type { Thuoc, LoaiThuoc } from "@/type";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import {
@@ -21,15 +21,7 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import {
-    SearchIcon,
-    PlusIcon,
-    PencilIcon,
-    Trash2Icon,
-    FolderPlusIcon,
-    PillIcon,
-    XIcon,
-} from "@lucide/vue";
+import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, PillIcon } from "@lucide/vue";
 
 interface DrugTableProps {
     drugs: Thuoc[];
@@ -59,8 +51,13 @@ const sortOptions: { value: DrugSortOption; label: string }[] = [
 ];
 
 const sortBy = ref<DrugSortOption>("salePriceAsc");
-const isSortMenuOpen = ref(false);
-const sortMenuRef = ref<HTMLDivElement | null>(null);
+
+function handleSortChange(value: AcceptableValue) {
+    if (typeof value !== "string") return;
+
+    const option = sortOptions.find((item) => item.value === value);
+    if (option) sortBy.value = option.value;
+}
 
 const emit = defineEmits<{
     "update:searchQuery": [value: string];
@@ -88,34 +85,18 @@ function compareDrugCode(a: Thuoc, b: Thuoc, direction: 1 | -1) {
     return a.maThuoc.localeCompare(b.maThuoc, undefined, { numeric: true }) * direction;
 }
 
+const sortComparators: Record<DrugSortOption, (a: Thuoc, b: Thuoc) => number> = {
+    salePriceAsc: (a, b) => a.donGiaBan - b.donGiaBan || compareDrugCode(a, b, 1),
+    salePriceDesc: (a, b) => b.donGiaBan - a.donGiaBan || compareDrugCode(a, b, -1),
+    purchasePriceAsc: (a, b) => a.giaNhapDuKien - b.giaNhapDuKien || compareDrugCode(a, b, 1),
+    purchasePriceDesc: (a, b) => b.giaNhapDuKien - a.giaNhapDuKien || compareDrugCode(a, b, -1),
+    stockAsc: (a, b) => a.soLuongTonKho - b.soLuongTonKho || compareDrugCode(a, b, 1),
+    stockDesc: (a, b) => b.soLuongTonKho - a.soLuongTonKho || compareDrugCode(a, b, -1),
+};
+
 const sortedDrugs = computed(() =>
-    [...filteredDrugs.value].sort((a, b) => {
-        switch (sortBy.value) {
-            case "salePriceDesc":
-                return b.donGiaBan - a.donGiaBan || compareDrugCode(a, b, -1);
-            case "purchasePriceAsc":
-                return a.giaNhapDuKien - b.giaNhapDuKien || compareDrugCode(a, b, 1);
-            case "purchasePriceDesc":
-                return b.giaNhapDuKien - a.giaNhapDuKien || compareDrugCode(a, b, -1);
-            case "stockAsc":
-                return a.soLuongTonKho - b.soLuongTonKho || compareDrugCode(a, b, 1);
-            case "stockDesc":
-                return b.soLuongTonKho - a.soLuongTonKho || compareDrugCode(a, b, -1);
-            case "salePriceAsc":
-            default:
-                return a.donGiaBan - b.donGiaBan || compareDrugCode(a, b, 1);
-        }
-    }),
+    [...filteredDrugs.value].sort(sortComparators[sortBy.value]),
 );
-
-function selectSortOption(option: DrugSortOption) {
-    sortBy.value = option;
-    isSortMenuOpen.value = false;
-}
-
-onClickOutside(sortMenuRef, () => {
-    isSortMenuOpen.value = false;
-});
 
 function formatCurrency(val: number): string {
     return new Intl.NumberFormat("vi-VN", {
@@ -141,40 +122,21 @@ function formatCurrency(val: number): string {
 
                 <!-- Action buttons -->
                 <div class="flex items-center gap-2">
-                    <div ref="sortMenuRef" class="relative" @keydown.esc="isSortMenuOpen = false">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            aria-haspopup="menu"
-                            aria-controls="drug-sort-menu"
-                            :aria-expanded="isSortMenuOpen"
-                            @click="isSortMenuOpen = !isSortMenuOpen"
-                        >
-                            Sắp xếp
-                        </Button>
-                        <div
-                            v-if="isSortMenuOpen"
-                            id="drug-sort-menu"
-                            role="menu"
-                            aria-label="Sắp xếp thuốc"
-                            class="absolute right-0 z-50 mt-2 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-                        >
-                            <button
+                    <Select :model-value="sortBy" @update:model-value="handleSortChange($event)">
+                        <SelectTrigger class="h-9 w-full text-sm sm:w-52">
+                            <SelectValue placeholder="Sắp xếp thuốc" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
                                 v-for="option in sortOptions"
                                 :key="option.value"
-                                type="button"
-                                role="menuitemradio"
-                                :aria-checked="sortBy === option.value"
-                                class="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                                @click="selectSortOption(option.value)"
+                                :value="option.value"
                             >
                                 {{ option.label }}
-                                <span v-if="sortBy === option.value" aria-hidden="true">✓</span>
-                            </button>
-                        </div>
-                    </div>
-                    <Button size="sm" @click="emit('createDrug')" class="text-xs">
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Button size="sm" @click="emit('createDrug')">
                         <PlusIcon class="w-3.5 h-3.5 mr-1" />
                         Thêm thuốc mới
                     </Button>

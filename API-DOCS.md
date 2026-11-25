@@ -10,7 +10,8 @@ Tài liệu này mô tả các endpoint hiện có trong `QuanLyNhaThuoc.API/Con
 - Request và response dùng JSON. Ví dụ bên dưới dùng camelCase; ASP.NET Core cũng nhận tên thuộc tính không phân biệt chữ hoa/chữ thường.
 - Ngày giờ gửi lên nên dùng ISO 8601, ví dụ `2026-11-18` hoặc `2026-11-18T10:30:00`.
 - Các mã (`maThuoc`, `maKH`, ...) được server tự sinh khi tạo dữ liệu, trừ khi API ghi rõ khác.
-- Chưa có `[Authorize]` trên các controller. Dù login phát hành JWT và Swagger cấu hình Bearer, các endpoint hiện tại không bắt buộc gửi token.
+- Tất cả endpoint, ngoại trừ `POST /api/Auth/login`, yêu cầu JWT hợp lệ trong header `Authorization: Bearer <token>`. Backend áp dụng authorization fallback policy; endpoint login được đánh dấu cho phép truy cập ẩn danh.
+- JWT do endpoint login cấp có hiệu lực 8 giờ.
 - CORS hiện cho phép mọi origin, header và method.
 
 ## Xác thực
@@ -44,6 +45,14 @@ Sai thông tin `401 Unauthorized`:
     "message": "Sai tên đăng nhập hoặc mật khẩu"
 }
 ```
+
+Thiếu tên đăng nhập hoặc mật khẩu trả `400 Bad Request`. Với các endpoint khác, gửi token trong header:
+
+```http
+Authorization: Bearer <token>
+```
+
+Token thiếu, không hợp lệ hoặc hết hạn trả `401 Unauthorized`.
 
 ## Danh mục thuốc
 
@@ -304,11 +313,13 @@ Ví dụ: `/api/ThongKe/tong-quan?months=3`
     "giaTriTrungBinhDon": 0,
     "soHoaDon": 0,
     "thuocSapHetHang": 0,
-    "loSapHetHan": 0
+    "loSapHetHan": 0,
+    "loDaHetHan": 0
 }
 ```
 
-`tongDoanhThu`, `loiNhuanUocTinh`, `giaTriTrungBinhDon` và `soHoaDon` áp dụng cho kỳ đã chọn. `tongGiaTriTonKho`, `thuocSapHetHang` và `loSapHetHan` phản ánh tồn kho hiện tại.
+Response gồm `tongDoanhThu`, `loiNhuanUocTinh`, `tongGiaTriTonKho`, `giaTriTrungBinhDon`, `soHoaDon`, `thuocSapHetHang`, `loSapHetHan` và `loDaHetHan`.
+`tongDoanhThu`, `loiNhuanUocTinh`, `giaTriTrungBinhDon` và `soHoaDon` áp dụng cho kỳ đã chọn; các chỉ số tồn kho và lô thuốc phản ánh trạng thái hiện tại.
 
 ### `GET /api/ThongKe/doanh-thu`
 
@@ -316,8 +327,8 @@ Thống kê doanh thu và số hóa đơn theo ngày. Query tùy chọn:
 
 | Tham số   | Mặc định                       |
 | --------- | ------------------------------ |
-| `tuNgay`  | 30 ngày trước, tính từ đầu ngày |
-| `denNgay` | Hôm nay, tính hết ngày         |
+| `tuNgay`  | Hôm nay trừ 30 ngày, lúc `00:00` |
+| `denNgay` | Hôm nay                         |
 
 Ví dụ: `/api/ThongKe/doanh-thu?tuNgay=2026-11-01&denNgay=2026-11-18`
 
@@ -339,5 +350,6 @@ Ngày không có hóa đơn sẽ không xuất hiện trong mảng.
 
 - `400 Bad Request`: lỗi nghiệp vụ hoặc dữ liệu không hợp lệ; các lỗi được controller xử lý thường có dạng `{ "message": "..." }`.
 - `404 Not Found`: không tìm thấy bản ghi theo mã; response có dạng `{ "message": "..." }`.
-- `401 Unauthorized`: hiện dùng cho đăng nhập sai. Các endpoint còn lại chưa gắn yêu cầu JWT.
+- `401 Unauthorized`: đăng nhập sai hoặc thiếu token/token không hợp lệ, hết hạn khi gọi endpoint cần xác thực.
 - Với lỗi binding/validation tự động của `[ApiController]`, ASP.NET Core có thể trả `400` dạng `ValidationProblemDetails` thay vì đối tượng `message`.
+- Lỗi hạ tầng không được ánh xạ thành lỗi nghiệp vụ có thể trả `500 Internal Server Error`.

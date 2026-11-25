@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { onClickOutside } from "@vueuse/core";
+import type { AcceptableValue } from "reka-ui";
 import type {
     PhieuNhap,
     NhaCC,
@@ -56,35 +56,26 @@ const sortOptions: { value: ReceiptSortOption; label: string }[] = [
 ];
 
 const sortBy = ref<ReceiptSortOption>("dateDesc");
-const isSortMenuOpen = ref(false);
-const sortMenuRef = ref<HTMLDivElement | null>(null);
 const exportError = ref("");
 const isExporting = ref(false);
 
+const sortComparators: Record<ReceiptSortOption, (a: PhieuNhap, b: PhieuNhap) => number> = {
+    dateDesc: (a, b) => new Date(b.ngayNhap).getTime() - new Date(a.ngayNhap).getTime(),
+    dateAsc: (a, b) => new Date(a.ngayNhap).getTime() - new Date(b.ngayNhap).getTime(),
+    totalAsc: (a, b) => a.tongTien - b.tongTien,
+    totalDesc: (a, b) => b.tongTien - a.tongTien,
+};
+
 const sortedReceipts = computed(() =>
-    [...props.receipts].sort((a, b) => {
-        switch (sortBy.value) {
-            case "dateAsc":
-                return new Date(a.ngayNhap).getTime() - new Date(b.ngayNhap).getTime();
-            case "totalAsc":
-                return a.tongTien - b.tongTien;
-            case "totalDesc":
-                return b.tongTien - a.tongTien;
-            case "dateDesc":
-            default:
-                return new Date(b.ngayNhap).getTime() - new Date(a.ngayNhap).getTime();
-        }
-    }),
+    [...props.receipts].sort(sortComparators[sortBy.value]),
 );
 
-function selectSortOption(option: ReceiptSortOption) {
-    sortBy.value = option;
-    isSortMenuOpen.value = false;
-}
+function handleSortChange(value: AcceptableValue) {
+    if (typeof value !== "string") return;
 
-onClickOutside(sortMenuRef, () => {
-    isSortMenuOpen.value = false;
-});
+    const option = sortOptions.find((item) => item.value === value);
+    if (option) sortBy.value = option.value;
+}
 const emit = defineEmits<{
     createReceipt: [payload: CreatePhieuNhapRequest];
 }>();
@@ -297,44 +288,21 @@ async function exportMonthlyImportTotals() {
                         {{ isExporting ? "Đang xuất..." : "Xuất báo cáo nhập hàng" }}
                     </Button>
                     <div class="flex gap-2.5">
-                        <div
-                            ref="sortMenuRef"
-                            class="relative"
-                            @keydown.esc="isSortMenuOpen = false"
-                        >
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                aria-haspopup="menu"
-                                aria-controls="receipt-sort-menu"
-                                :aria-expanded="isSortMenuOpen"
-                                @click="isSortMenuOpen = !isSortMenuOpen"
-                            >
-                                Sắp xếp
-                            </Button>
-                            <div
-                                v-if="isSortMenuOpen"
-                                id="receipt-sort-menu"
-                                role="menu"
-                                aria-label="Sắp xếp phiếu nhập"
-                                class="absolute right-0 z-50 mt-2 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-                            >
-                                <button
+                        <Select :model-value="sortBy" @update:model-value="handleSortChange">
+                            <SelectTrigger class="h-9 w-full text-sm sm:w-52">
+                                <SelectValue placeholder="Sắp xếp phiếu nhập" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem
                                     v-for="option in sortOptions"
                                     :key="option.value"
-                                    type="button"
-                                    role="menuitemradio"
-                                    :aria-checked="sortBy === option.value"
-                                    class="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                                    @click="selectSortOption(option.value)"
+                                    :value="option.value"
                                 >
                                     {{ option.label }}
-                                    <span v-if="sortBy === option.value" aria-hidden="true">✓</span>
-                                </button>
-                            </div>
-                        </div>
-                        <Button size="sm" @click="openCreateModal" class="text-xs">
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button size="sm" @click="openCreateModal">
                             <PlusIcon class="w-3.5 h-3.5 mr-1" />
                             Tạo phiếu nhập mới
                         </Button>
@@ -352,7 +320,6 @@ async function exportMonthlyImportTotals() {
                             <TableHead class="w-36">Ngày nhập</TableHead>
                             <TableHead>Nhà cung cấp</TableHead>
                             <TableHead class="w-36 text-right">Tổng tiền</TableHead>
-                            <TableHead class="w-24 text-right">Chi tiết</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -375,8 +342,9 @@ async function exportMonthlyImportTotals() {
                         <TableRow
                             v-else
                             v-for="pn in sortedReceipts"
+                            @click="openDetailModal(pn)"
                             :key="pn.maPhieuNhap"
-                            class="hover:bg-muted/40 transition-colors"
+                            class="hover:bg-muted/40 transition-colors cursor-pointer h-12"
                         >
                             <TableCell class="font-mono text-xs font-semibold text-primary">
                                 {{ pn.maPhieuNhap }}
@@ -391,20 +359,9 @@ async function exportMonthlyImportTotals() {
                                 >
                             </TableCell>
                             <TableCell
-                                class="text-right font-semibold text-xs text-blue-600 dark:text-blue-400"
+                                class="text-right font-semibold text-xs text-blue-600 dark:text-blue-400 tabular-nums"
                             >
                                 {{ formatCurrency(pn.tongTien) }}
-                            </TableCell>
-                            <TableCell class="text-right">
-                                <Button
-                                    variant="ghost"
-                                    size="icon-xs"
-                                    class="hover:text-primary"
-                                    title="Xem chi tiết các lô tạo bởi phiếu nhập này"
-                                    @click="openDetailModal(pn)"
-                                >
-                                    <EyeIcon class="w-3.5 h-3.5" />
-                                </Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -414,7 +371,7 @@ async function exportMonthlyImportTotals() {
 
         <!-- Dialog: Xem chi tiết phiếu nhập -->
         <Dialog :open="isDetailOpen" @update:open="isDetailOpen = $event">
-            <DialogContent class="sm:max-w-[640px]">
+            <DialogContent class="sm:max-w-160">
                 <DialogHeader>
                     <DialogTitle
                         >Chi tiết Phiếu nhập: {{ selectedReceipt?.maPhieuNhap }}</DialogTitle
@@ -469,7 +426,7 @@ async function exportMonthlyImportTotals() {
                                         formatCurrency(item.donGiaNhap)
                                     }}</TableCell>
                                     <TableCell
-                                        class="text-right text-xs font-semibold text-blue-600"
+                                        class="text-right text-xs font-semibold text-blue-600 dark:text-blue-400 tabular-nums"
                                         >{{ formatCurrency(item.thanhTien) }}</TableCell
                                     >
                                 </TableRow>
@@ -479,7 +436,9 @@ async function exportMonthlyImportTotals() {
 
                     <div class="flex justify-between items-center pt-3 text-sm font-semibold">
                         <span>Tổng tiền nhập hàng:</span>
-                        <span class="text-base text-blue-600 dark:text-blue-400">
+                        <span
+                            class="text-base font-semibold text-blue-600 dark:text-blue-400 tabular-nums"
+                        >
                             {{ formatCurrency(selectedReceipt?.tongTien) }}
                         </span>
                     </div>
@@ -493,7 +452,7 @@ async function exportMonthlyImportTotals() {
 
         <!-- Dialog: Tạo phiếu nhập mới -->
         <Dialog :open="isCreateOpen" @update:open="isCreateOpen = $event">
-            <DialogContent class="sm:max-w-[620px]">
+            <DialogContent class="sm:max-w-155">
                 <DialogHeader>
                     <DialogTitle>Tạo Phiếu nhập kho mới</DialogTitle>
                     <DialogDescription>
@@ -622,7 +581,7 @@ async function exportMonthlyImportTotals() {
                     </div>
 
                     <div
-                        class="p-2.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs flex gap-2 items-start"
+                        class="p-2.5 rounded-md bg-muted text-muted-foreground border border-border text-xs flex gap-2 items-start"
                     >
                         <InfoIcon class="w-4 h-4 shrink-0 mt-0.5" />
                         <span>

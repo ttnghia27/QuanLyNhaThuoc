@@ -28,26 +28,25 @@ const financialStats = computed(() => {
             title: "Tổng doanh thu",
             value: formatCurrency(s?.tongDoanhThu),
             description: "Trong kỳ đã chọn",
-            cardClass:
-                "border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-card to-card",
+            cardClass: "border-emerald-500/25 bg-card",
             titleClass: "text-emerald-700 dark:text-emerald-400",
-            valueClass: "text-emerald-950 dark:text-emerald-100",
+            valueClass: "text-foreground",
         },
         {
             title: "Lợi nhuận ước tính",
             value: formatCurrency(s?.loiNhuanUocTinh),
             description: "Trong kỳ đã chọn",
-            cardClass: "border-sky-500/30 bg-gradient-to-br from-sky-500/10 via-card to-card",
+            cardClass: "border-sky-500/25 bg-card",
             titleClass: "text-sky-700 dark:text-sky-400",
-            valueClass: "text-sky-950 dark:text-sky-100",
+            valueClass: "text-foreground",
         },
         {
             title: "Giá trị tồn kho",
             value: formatCurrency(s?.tongGiaTriTonKho),
             description: "Giá trị hàng tồn hiện tại",
-            cardClass: "border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-card to-card",
+            cardClass: "border-violet-500/25 bg-card",
             titleClass: "text-violet-700 dark:text-violet-400",
-            valueClass: "text-violet-950 dark:text-violet-100",
+            valueClass: "text-foreground",
         },
     ];
 });
@@ -59,17 +58,15 @@ const orderStats = computed(() => {
             title: "Số hóa đơn",
             value: formatCount(s?.soHoaDon),
             description: "Trong kỳ đã chọn",
-            cardClass:
-                "border-slate-300/80 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-900/50",
-            valueClass: "text-slate-900 dark:text-slate-100",
+            cardClass: "border-border bg-card",
+            valueClass: "text-foreground",
         },
         {
             title: "Giá trị trung bình đơn",
             value: formatCurrency(s?.giaTriTrungBinhDon),
             description: "Trung bình mỗi hóa đơn",
-            cardClass:
-                "border-slate-300/80 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-900/50",
-            valueClass: "text-slate-900 dark:text-slate-100",
+            cardClass: "border-border bg-card",
+            valueClass: "text-foreground",
         },
     ];
 });
@@ -87,12 +84,12 @@ const alertStats = computed(() => {
             description: "Tồn kho không quá 10",
             cardClass:
                 lowStock > 0
-                    ? "border-amber-400 bg-amber-50/90 shadow-sm dark:border-amber-500/60 dark:bg-amber-950/35"
+                    ? "border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20"
                     : "border-border bg-card",
             valueClass:
                 lowStock > 0
-                    ? "text-amber-700 dark:text-amber-300 text-2xl font-bold"
-                    : "text-2xl font-semibold",
+                    ? "text-2xl font-semibold tabular-nums tracking-tight text-amber-700 dark:text-amber-400"
+                    : "text-2xl font-semibold tabular-nums tracking-tight text-foreground",
         },
         {
             title: "Lô sắp hết hạn",
@@ -100,23 +97,25 @@ const alertStats = computed(() => {
             description: "Cảnh báo tồn kho hiện tại",
             cardClass:
                 nearExpiry > 0
-                    ? "border-orange-400 bg-orange-50/90 shadow-sm"
+                    ? "border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20"
                     : "border-border bg-card",
             valueClass:
                 nearExpiry > 0
-                    ? "text-orange-700 dark:text-orange-300 text-3xl font-bold"
-                    : "text-2xl font-semibold",
+                    ? "text-2xl font-semibold tabular-nums tracking-tight text-amber-700 dark:text-amber-400"
+                    : "text-2xl font-semibold tabular-nums tracking-tight text-foreground",
         },
         {
             title: "Lô đã hết hạn",
             value: formatCount(expired),
             description: "Cần thu hồi / hủy lô",
             cardClass:
-                expired > 0 ? "border-rose-500 bg-rose-100/80 shadow-sm" : "border-border bg-card",
+                expired > 0
+                    ? "border-rose-500/40 bg-rose-50/50 dark:bg-rose-950/20"
+                    : "border-border bg-card",
             valueClass:
                 expired > 0
-                    ? "text-rose-800 dark:text-rose-200 text-3xl font-extrabold"
-                    : "text-2xl font-semibold",
+                    ? "text-2xl font-semibold tabular-nums tracking-tight text-rose-700 dark:text-rose-400"
+                    : "text-2xl font-semibold tabular-nums tracking-tight text-foreground",
         },
     ];
 });
@@ -132,13 +131,13 @@ const alertStats = computed(() => {
                 :class="['flex-1 transition-colors', stat.cardClass]"
             >
                 <CardHeader class="pb-1">
-                    <CardTitle :class="['text-sm font-semibold', stat.titleClass]">
+                    <CardTitle :class="['text-xs font-medium', stat.titleClass]">
                         {{ stat.title }}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div v-if="isLoading" class="h-8 w-36 animate-pulse rounded bg-muted" />
-                    <div v-else :class="['text-2xl font-bold tracking-tight', stat.valueClass]">
+                    <div v-else :class="['text-2xl font-semibold tabular-nums tracking-tight', stat.valueClass]">
                         {{ stat.value }}
                     </div>
                     <CardDescription class="mt-1 text-xs">

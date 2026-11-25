@@ -65,7 +65,7 @@ const chartData = computed(() => {
       {
         label: "Số hóa đơn",
         data: invoices,
-        backgroundColor: "rgba(16, 185, 129, 0.65)",
+        backgroundColor: "rgba(16, 185, 129, 0.7)",
         borderColor: "rgb(5, 150, 105)",
         borderWidth: 1,
         borderRadius: 6,
