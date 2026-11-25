@@ -128,9 +128,7 @@ function handleDelete(cat: LoaiThuoc) {
           Thêm phân loại
         </Button>
       </div>
-
-      Ô tìm kiếm loại thuốc
-      <div class="pt-3 max-w-md relative">
+      <div class="relative flex-1">
         <SearchIcon
           class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />

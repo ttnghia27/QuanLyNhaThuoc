@@ -199,7 +199,7 @@ function handleTieuHuy(lot: LoThuoc) {
           </CardDescription>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-2 shrink-0">
+        <div class="flex items-center gap-2 shrink-0">
           <div
             ref="sortMenuRef"
             class="relative"
@@ -256,7 +256,7 @@ function handleTieuHuy(lot: LoThuoc) {
       </div>
 
       <!-- Ô tìm kiếm lô thuốc theo tên thuốc / mã thuốc -->
-      <div class="pt-3 max-w-md relative">
+      <div class="relative flex-1">
         <SearchIcon
           class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />

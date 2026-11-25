@@ -144,38 +144,17 @@ function handleDelete(c: KhachHang) {
       </div>
 
       <!-- Search bar with clear button and search button -->
-      <div class="pt-3 max-w-lg flex items-center gap-2">
-        <div class="relative flex-1">
-          <SearchIcon
-            class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            :model-value="searchQuery"
-            @update:model-value="emit('update:searchQuery', String($event))"
-            @keydown.enter="emit('search')"
-            placeholder="Tìm theo tên khách hàng, số điện thoại, mã KH..."
-            class="pl-9 pr-8 text-sm h-9"
-          />
-          <button
-            v-if="searchQuery"
-            type="button"
-            @click="handleClearSearch"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            title="Xóa tìm kiếm"
-          >
-            <XIcon class="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <!-- <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    class="h-9 px-3 text-xs shrink-0"
-                    @click="emit('search')"
-                >
-                    Tìm kiếm
-                </Button> -->
+      <div class="relative flex-1">
+        <SearchIcon
+          class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          :model-value="searchQuery"
+          @update:model-value="emit('update:searchQuery', String($event))"
+          @keydown.enter="emit('search')"
+          placeholder="Tìm theo tên khách hàng, số điện thoại, mã KH..."
+          class="pl-9 pr-8 text-sm h-9"
+        />
       </div>
     </CardHeader>
 
