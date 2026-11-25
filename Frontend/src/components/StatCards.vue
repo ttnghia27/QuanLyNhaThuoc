@@ -178,7 +178,7 @@ const alertStats = computed(() => {
             </div>
 
             <!-- Cụm cảnh báo nổi bật: Thuốc sắp hết hàng & Lô sắp hết hạn đi cùng nhau -->
-            <div class="flex flex-1 flex-row gap-3 rounded-xl border">
+            <div class="flex flex-1 flex-row gap-3 rounded-xl">
                 <Card
                     v-for="alert in alertStats"
                     :key="alert.title"
