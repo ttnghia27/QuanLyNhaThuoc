@@ -37,6 +37,7 @@ public sealed class ThuocService
                 x.TenThuoc,
                 x.CongDung,
                 x.DonGiaBan,
+                x.GiaNhapDuKien,
                 x.SoLuongTonKho,
                 x.MaLoai,
                 x.LoaiThuoc.TenLoai))
@@ -60,6 +61,7 @@ public sealed class ThuocService
             TenThuoc = dto.TenThuoc.Trim(),
             CongDung = dto.CongDung?.Trim(),
             DonGiaBan = dto.DonGiaBan,
+            GiaNhapDuKien = dto.GiaNhapDuKien,
             SoLuongTonKho = 0,
             MaLoai = dto.MaLoai
         };
@@ -80,6 +82,7 @@ public sealed class ThuocService
 
         entity.TenThuoc = dto.TenThuoc.Trim();
         entity.CongDung = dto.CongDung?.Trim();
+        entity.GiaNhapDuKien = dto.GiaNhapDuKien;
         entity.DonGiaBan = dto.DonGiaBan;
         entity.MaLoai = dto.MaLoai;
 

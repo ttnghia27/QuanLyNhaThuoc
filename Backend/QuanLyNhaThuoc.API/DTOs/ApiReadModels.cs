@@ -7,6 +7,7 @@ public sealed record ThuocListItem(
     string TenThuoc,
     string? CongDung,
     decimal DonGiaBan,
+    decimal GiaNhapDuKien,
     int SoLuongTonKho,
     string MaLoai,
     string TenLoai);

@@ -100,7 +100,7 @@ Lấy danh sách thuốc. Query tùy chọn:
 
 Ví dụ: `/api/Thuoc?search=para&maLoai=LT001`
 
-Mỗi phần tử gồm `maThuoc`, `tenThuoc`, `congDung`, `donGiaBan`, `soLuongTonKho`, `maLoai`, `tenLoai`.
+Mỗi phần tử gồm `maThuoc`, `tenThuoc`, `congDung`, `donGiaBan`, `giaNhapDuKien`, `soLuongTonKho`, `maLoai`, `tenLoai`.
 
 ### `GET /api/Thuoc/{id}`
 
@@ -115,6 +115,7 @@ Tạo thuốc. Tồn kho ban đầu tự đặt bằng 0; kho tăng khi tạo ph
     "tenThuoc": "Paracetamol 500mg",
     "congDung": "Hạ sốt, giảm đau",
     "donGiaBan": 2500,
+    "giaNhapDuKien": 1200,
     "maLoai": "LT001"
 }
 ```
@@ -123,7 +124,7 @@ Thành công `200 OK`, trả về entity thuốc. `maThuoc` và `soLuongTonKho` 
 
 ### `PUT /api/Thuoc/{id}`
 
-Cập nhật `tenThuoc`, `congDung`, `donGiaBan`, `maLoai`; body giống `POST`. Không tìm thấy thuốc trả `404`; mã loại không tồn tại trả `400`. Tồn kho không được cập nhật qua endpoint này.
+Cập nhật `tenThuoc`, `congDung`, `donGiaBan`, `giaNhapDuKien`, `maLoai`; body giống `POST`. Không tìm thấy thuốc trả `404`; mã loại không tồn tại trả `400`. Tồn kho không được cập nhật qua endpoint này.
 
 ### `DELETE /api/Thuoc/{id}`
 

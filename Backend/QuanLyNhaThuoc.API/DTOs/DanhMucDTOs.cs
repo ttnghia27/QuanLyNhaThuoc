@@ -12,6 +12,7 @@ public class ThuocDto
     public string TenThuoc { get; set; } = null!;
     public string? CongDung { get; set; }
     public decimal DonGiaBan { get; set; }
+    public decimal GiaNhapDuKien { get; set; }
     public string MaLoai { get; set; } = null!;
 }
 

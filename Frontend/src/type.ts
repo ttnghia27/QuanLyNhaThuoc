@@ -11,6 +11,7 @@ export interface Thuoc {
     tenThuoc: string;
     congDung: string;
     donGiaBan: number;
+    giaNhapDuKien: number;
     soLuongTonKho: number;
     maLoai: string;
     tenLoai?: string;
@@ -20,6 +21,7 @@ export interface CreateThuocRequest {
     tenThuoc: string;
     congDung: string;
     donGiaBan: number;
+    giaNhapDuKien: number;
     maLoai: string;
 }
 
@@ -27,6 +29,7 @@ export interface UpdateThuocRequest {
     tenThuoc: string;
     congDung: string;
     donGiaBan: number;
+    giaNhapDuKien: number;
     maLoai: string;
 }
 

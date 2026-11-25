@@ -37,6 +37,7 @@ const emit = defineEmits<{
 const tenThuoc = ref("");
 const congDung = ref("");
 const donGiaBan = ref<number | "">("");
+const giaNhapDuKien = ref<number | "">("");
 const maLoai = ref("");
 const errorMessage = ref("");
 
@@ -49,11 +50,13 @@ watch(
                 tenThuoc.value = props.drugToEdit.tenThuoc;
                 congDung.value = props.drugToEdit.congDung;
                 donGiaBan.value = props.drugToEdit.donGiaBan;
+                giaNhapDuKien.value = props.drugToEdit.giaNhapDuKien;
                 maLoai.value = props.drugToEdit.maLoai;
             } else {
                 tenThuoc.value = "";
                 congDung.value = "";
                 donGiaBan.value = "";
+                giaNhapDuKien.value = "";
                 maLoai.value = props.categories.length > 0 ? props.categories[0].maLoai : "";
             }
         }
@@ -78,6 +81,10 @@ function handleSubmit() {
         errorMessage.value = "Vui lòng nhập đơn giá bán hợp lệ (&ge; 0).";
         return;
     }
+    if (giaNhapDuKien.value === "" || Number(giaNhapDuKien.value) < 0) {
+        errorMessage.value = "Vui lòng nhập giá nhập dự kiến hợp lệ (&ge; 0).";
+        return;
+    }
     if (!maLoai.value) {
         errorMessage.value = "Vui lòng chọn loại thuốc.";
         return;
@@ -87,6 +94,7 @@ function handleSubmit() {
         tenThuoc: tenThuoc.value.trim(),
         congDung: congDung.value.trim(),
         donGiaBan: Number(donGiaBan.value),
+        giaNhapDuKien: Number(giaNhapDuKien.value),
         maLoai: maLoai.value,
     };
 
@@ -155,8 +163,23 @@ function handleSubmit() {
                         id="donGiaBan"
                         type="number"
                         min="0"
-                        step="500"
+                        step="1000"
                         v-model="donGiaBan"
+                        placeholder="Ví dụ: 25000"
+                        :disabled="isSaving"
+                        required
+                    />
+                </div>
+                <div class="space-y-1.5">
+                    <Label for="giaNhapDuKien"
+                        >Giá nhập dự kiến (₫) <span class="text-destructive">*</span></Label
+                    >
+                    <Input
+                        id="giaNhapDuKien"
+                        type="number"
+                        min="0"
+                        step="1000"
+                        v-model="giaNhapDuKien"
                         placeholder="Ví dụ: 25000"
                         :disabled="isSaving"
                         required

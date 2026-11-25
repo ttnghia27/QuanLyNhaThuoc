@@ -45,6 +45,7 @@ public class ApplicationDbContext : DbContext
             e.Property(x => x.TenThuoc).HasMaxLength(200).IsRequired();
             e.Property(x => x.CongDung).HasMaxLength(500);
             e.Property(x => x.DonGiaBan).HasColumnType("decimal(18,0)");
+            e.Property(x => x.GiaNhapDuKien).HasColumnType("decimal(18,0)");
             e.HasOne(x => x.LoaiThuoc)
                 .WithMany(x => x.Thuocs)
                 .HasForeignKey(x => x.MaLoai);
