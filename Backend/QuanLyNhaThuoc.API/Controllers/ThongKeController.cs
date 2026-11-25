@@ -15,9 +15,17 @@ public sealed class ThongKeController : ControllerBase
     }
 
     [HttpGet("tong-quan")]
-    public async Task<IActionResult> GetTongQuan()
+    public async Task<IActionResult> GetTongQuan([FromQuery] int months = 1)
     {
-        return Ok(await _service.GetTongQuanAsync());
+        try
+        {
+            var data = await _service.GetTongQuanAsync(months);
+            return Ok(data);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("doanh-thu")]

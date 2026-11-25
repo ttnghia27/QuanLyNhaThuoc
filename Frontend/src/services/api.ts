@@ -42,6 +42,7 @@ export function clearAuthSession(): void {
 export function isAuthenticated(): boolean {
     return Boolean(getAuthToken());
 }
+export type ThongKeMonths = 1 | 3 | 6 | 12;
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -104,8 +105,9 @@ export const pharmacyApi = {
         });
     },
     // Thống kê
-    async getThongKeTongQuan(): Promise<ThongKeTongQuan> {
-        return request<ThongKeTongQuan>("/ThongKe/tong-quan");
+    async getThongKeTongQuan(months: ThongKeMonths = 1): Promise<ThongKeTongQuan> {
+        const params = new URLSearchParams({ months: String(months) });
+        return request<ThongKeTongQuan>(`/ThongKe/tong-quan?${params.toString()}`);
     },
 
     async getThongKeDoanhThu(tuNgay?: string, denNgay?: string): Promise<ThongKeDoanhThuItem[]> {

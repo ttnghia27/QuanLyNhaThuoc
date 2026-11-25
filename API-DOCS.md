@@ -293,22 +293,22 @@ Lỗi nghiệp vụ trả `400` dạng `{ "message": "..." }`, ví dụ khách h
 
 ### `GET /api/ThongKe/tong-quan`
 
-Không cần query. Response:
+Query `months` chọn kỳ thống kê, chỉ nhận `1`, `3`, `6` hoặc `12`; mặc định là `1`.
+Ví dụ: `/api/ThongKe/tong-quan?months=3`
 
 ```json
 {
-    "doanhThuHomNay": 0,
     "tongDoanhThu": 0,
-    "tongTienNhap": 0,
     "loiNhuanUocTinh": 0,
+    "tongGiaTriTonKho": 0,
+    "giaTriTrungBinhDon": 0,
     "soHoaDon": 0,
-    "soLoaiThuoc": 0,
     "thuocSapHetHang": 0,
     "loSapHetHan": 0
 }
 ```
 
-`soLoaiThuoc` trong implementation hiện đếm bản ghi thuốc (không phải danh mục loại thuốc). `thuocSapHetHang` đếm thuốc có tồn kho `<= 10`; `loSapHetHan` đếm lô còn hàng có hạn sử dụng trong vòng 30 ngày tới hoặc đã quá hạn.
+`tongDoanhThu`, `loiNhuanUocTinh`, `giaTriTrungBinhDon` và `soHoaDon` áp dụng cho kỳ đã chọn. `tongGiaTriTonKho`, `thuocSapHetHang` và `loSapHetHan` phản ánh tồn kho hiện tại.
 
 ### `GET /api/ThongKe/doanh-thu`
 
@@ -316,7 +316,7 @@ Thống kê doanh thu và số hóa đơn theo ngày. Query tùy chọn:
 
 | Tham số   | Mặc định                       |
 | --------- | ------------------------------ |
-| `tuNgay`  | 7 ngày trước, tính từ đầu ngày |
+| `tuNgay`  | 30 ngày trước, tính từ đầu ngày |
 | `denNgay` | Hôm nay, tính hết ngày         |
 
 Ví dụ: `/api/ThongKe/doanh-thu?tuNgay=2026-11-01&denNgay=2026-11-18`

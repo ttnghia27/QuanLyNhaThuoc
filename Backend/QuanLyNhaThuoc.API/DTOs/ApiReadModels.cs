@@ -99,3 +99,15 @@ public sealed record TongQuan(
     int SoLoaiThuoc,
     int ThuocSapHetHang,
     int LoSapHetHan);
+
+
+
+public sealed record TongQuanDTO(
+    decimal TongDoanhThu,
+    decimal LoiNhuanUocTinh,
+    decimal TongGiaTriTonKho,
+    decimal GiaTriTrungBinhDon,
+    int SoHoaDon,
+    int ThuocSapHetHang,
+    int LoSapHetHan
+);

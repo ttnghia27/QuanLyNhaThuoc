@@ -18,7 +18,7 @@ import type {
     CreateHoaDonRequest,
     CreatePhieuNhapRequest,
 } from "@/type";
-import { pharmacyApi } from "@/services/api";
+import { pharmacyApi, type ThongKeMonths } from "@/services/api";
 import Sidebar, { type NavTab } from "@/components/Sidebar.vue";
 import DashboardView from "@/views/DashboardView.vue";
 import DrugView from "@/views/DrugView.vue";
@@ -37,6 +37,7 @@ const currentTab = ref<NavTab>("dashboard");
 // Data state
 const stats = ref<ThongKeTongQuan | null>(null);
 const isStatsLoading = ref(false);
+const selectedStatsMonths = ref<ThongKeMonths>(1);
 
 const revenueChartData = ref<ThongKeDoanhThuItem[]>([]);
 const isChartLoading = ref(false);
@@ -88,7 +89,7 @@ function showSuccess(msg: string) {
 async function loadStats() {
     isStatsLoading.value = true;
     try {
-        stats.value = await pharmacyApi.getThongKeTongQuan();
+        stats.value = await pharmacyApi.getThongKeTongQuan(selectedStatsMonths.value);
     } catch (err) {
         console.error("Lỗi khi tải thống kê:", err);
     } finally {
@@ -99,12 +100,44 @@ async function loadStats() {
 async function loadRevenueChart() {
     isChartLoading.value = true;
     try {
-        revenueChartData.value = await pharmacyApi.getThongKeDoanhThu();
+        const { tuNgay, denNgay } = getStatsDateRange(selectedStatsMonths.value);
+        revenueChartData.value = await pharmacyApi.getThongKeDoanhThu(tuNgay, denNgay);
     } catch (err) {
         console.error("Lỗi khi tải biểu đồ doanh thu:", err);
     } finally {
         isChartLoading.value = false;
     }
+}
+
+function getStatsDateRange(months: ThongKeMonths) {
+    const end = new Date();
+    const start = new Date(end);
+    const dayOfMonth = start.getDate();
+
+    start.setDate(1);
+    start.setMonth(start.getMonth() - months);
+    start.setDate(
+        Math.min(dayOfMonth, new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate()),
+    );
+
+    return {
+        tuNgay: formatApiDate(start),
+        denNgay: formatApiDate(end),
+    };
+}
+
+function formatApiDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+async function handleStatsMonthsChange(months: ThongKeMonths) {
+    if (selectedStatsMonths.value === months) return;
+
+    selectedStatsMonths.value = months;
+    await Promise.all([loadStats(), loadRevenueChart()]);
 }
 
 async function loadCategories() {
@@ -517,6 +550,8 @@ onMounted(() => {
                     :is-stats-loading="isStatsLoading"
                     :revenue-chart-data="revenueChartData"
                     :is-chart-loading="isChartLoading"
+                    :months="selectedStatsMonths"
+                    @update:months="handleStatsMonthsChange"
                 />
 
                 <!-- Tab 2: Thuốc CRUD -->

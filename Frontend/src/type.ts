@@ -146,12 +146,11 @@ export interface CanhBaoSapHetHanItem {
 }
 
 export interface ThongKeTongQuan {
-    doanhThuHomNay: number;
     tongDoanhThu: number;
-    tongTienNhap: number;
     loiNhuanUocTinh: number;
+    tongGiaTriTonKho: number;
     soHoaDon: number;
-    soLoaiThuoc: number;
+    giaTriTrungBinhDon: number;
     thuocSapHetHang: number;
     loSapHetHan: number;
 }
