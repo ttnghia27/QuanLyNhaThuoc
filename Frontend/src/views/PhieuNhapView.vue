@@ -70,6 +70,8 @@ const sortOptions: { value: ReceiptSortOption; label: string }[] = [
 const sortBy = ref<ReceiptSortOption>("dateDesc");
 const isSortMenuOpen = ref(false);
 const sortMenuRef = ref<HTMLDivElement | null>(null);
+const exportError = ref("");
+const isExporting = ref(false);
 
 const sortedReceipts = computed(() =>
   [...props.receipts].sort((a, b) => {
@@ -221,6 +223,62 @@ function formatDate(dateStr: string): string {
     return dateStr;
   }
 }
+
+async function exportMonthlyImportTotals() {
+  exportError.value = "";
+  isExporting.value = true;
+
+  try {
+    const XLSX = await import("xlsx");
+    const now = new Date();
+    const monthlyTotals = new Map<string, { label: string; total: number }>();
+
+    for (let offset = 11; offset >= 0; offset -= 1) {
+      const month = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`;
+      const label = `${String(month.getMonth() + 1).padStart(2, "0")}/${month.getFullYear()}`;
+      monthlyTotals.set(monthKey, { label, total: 0 });
+    }
+
+    for (const receipt of props.receipts) {
+      const month = monthlyTotals.get(receipt.ngayNhap.slice(0, 7));
+      if (month) month.total += receipt.tongTien;
+    }
+
+    const months = Array.from(monthlyTotals.values());
+    const grandTotal = months.reduce((total, month) => total + month.total, 0);
+    const rows: (string | number)[][] = [
+      ["Tháng", "Tổng tiền nhập"],
+      ...months.map((month) => [month.label, month.total]),
+      ["Tổng 12 tháng", grandTotal],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    worksheet["!cols"] = [{ wch: 20 }, { wch: 24 }];
+
+    for (let row = 2; row <= rows.length; row += 1) {
+      const amountCell = worksheet[`B${row}`];
+      if (amountCell) amountCell.z = '#,##0 "₫"';
+    }
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "TongTienNhap");
+
+    const firstMonth = Array.from(monthlyTotals.keys())[0];
+    const lastMonth = Array.from(monthlyTotals.keys()).at(-1);
+    XLSX.writeFile(
+      workbook,
+      `tong-tien-nhap-theo-thang_${firstMonth}_${lastMonth}.xlsx`,
+    );
+  } catch (error: unknown) {
+    console.error("Lỗi khi xuất tổng tiền nhập theo tháng:", error);
+    exportError.value =
+      error instanceof Error
+        ? `Không thể xuất file Excel: ${error.message}`
+        : "Không thể xuất file Excel.";
+  } finally {
+    isExporting.value = false;
+  }
+}
 </script>
 
 <template>
@@ -248,7 +306,21 @@ function formatDate(dateStr: string): string {
     </CardHeader>
 
     <CardContent>
+      <p v-if="exportError" role="alert" class="mb-3 text-xs text-destructive">
+        {{ exportError }}
+      </p>
       <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          :disabled="isLoading || isExporting"
+          title="Xuất tổng tiền nhập theo tháng trong 12 tháng gần nhất"
+          @click="exportMonthlyImportTotals"
+        >
+          <FileDownIcon class="mr-1 h-3.5 w-3.5" />
+          {{ isExporting ? "Đang xuất..." : "Xuất Excel" }}
+        </Button>
         <div
           ref="sortMenuRef"
           class="relative sm:ml-auto"

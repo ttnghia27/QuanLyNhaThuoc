@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { FileDownIcon } from "@lucide/vue";
 
 interface DashboardViewProps {
   stats: ThongKeTongQuan | null;
@@ -17,12 +19,15 @@ interface DashboardViewProps {
   revenueChartData: ThongKeDoanhThuItem[];
   isChartLoading: boolean;
   months: ThongKeMonths;
+  isExportingRevenueReport: boolean;
+  monthlyRevenueReportError: string;
 }
 
 defineProps<DashboardViewProps>();
 
 const emit = defineEmits<{
   "update:months": [months: ThongKeMonths];
+  exportMonthlyRevenue: [];
 }>();
 
 const monthOptions: { value: ThongKeMonths; label: string }[] = [
@@ -49,20 +54,39 @@ function handleMonthsChange(value: string) {
           Các chỉ số hiệu quả kinh doanh, cảnh báo tồn kho và biểu đồ doanh thu
         </p>
       </div>
-      <Select
-        :model-value="String(months)"
-        @update:model-value="handleMonthsChange(String($event))"
-      >
-        <SelectTrigger class="h-9 w-full sm:w-36" aria-label="Khoảng thời gian thống kê">
-          <SelectValue placeholder="Chọn thời gian" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="option in monthOptions" :key="option.value" :value="String(option.value)">
-            {{ option.label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Select
+          :model-value="String(months)"
+          @update:model-value="handleMonthsChange(String($event))"
+        >
+          <SelectTrigger class="h-9 w-full sm:w-36" aria-label="Khoảng thời gian thống kê">
+            <SelectValue placeholder="Chọn thời gian" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="option in monthOptions"
+              :key="option.value"
+              :value="String(option.value)"
+            >
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          :disabled="isExportingRevenueReport"
+          @click="emit('exportMonthlyRevenue')"
+        >
+          <FileDownIcon class="mr-1 h-4 w-4" />
+          {{ isExportingRevenueReport ? "Đang xuất..." : "Báo cáo doanh thu" }}
+        </Button>
+      </div>
     </div>
+    <p v-if="monthlyRevenueReportError" role="alert" class="text-sm text-destructive">
+      {{ monthlyRevenueReportError }}
+    </p>
 
     <!-- Stat cards -->
     <StatCards :stats="stats" :is-loading="isStatsLoading" />
