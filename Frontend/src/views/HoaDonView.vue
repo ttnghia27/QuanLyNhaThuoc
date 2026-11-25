@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import type { HoaDon, KhachHang, Thuoc, CreateHoaDonRequest, CreateHoaDonDetailItem } from "@/type";
 import { pharmacyApi } from "@/services/api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -43,6 +43,29 @@ const props = defineProps<HoaDonViewProps>();
 const emit = defineEmits<{
     createInvoice: [payload: CreateHoaDonRequest];
 }>();
+
+const startDate = ref("");
+const endDate = ref("");
+const hasDateFilter = computed(() => Boolean(startDate.value || endDate.value));
+const isDateRangeInvalid = computed(
+    () => Boolean(startDate.value && endDate.value && startDate.value > endDate.value),
+);
+const filteredInvoices = computed(() => {
+    if (isDateRangeInvalid.value) return [];
+
+    return props.invoices.filter((invoice) => {
+        const invoiceDate = invoice.ngayLapHD.slice(0, 10);
+        return (
+            (!startDate.value || invoiceDate >= startDate.value) &&
+            (!endDate.value || invoiceDate <= endDate.value)
+        );
+    });
+});
+
+function clearDateFilters() {
+    startDate.value = "";
+    endDate.value = "";
+}
 
 // Detail Modal
 const isDetailOpen = ref(false);
@@ -170,6 +193,36 @@ function formatDate(dateStr: string): string {
         </CardHeader>
 
         <CardContent>
+            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div class="space-y-1.5">
+                    <Label for="invoice-start-date">Từ ngày</Label>
+                    <Input
+                        id="invoice-start-date"
+                        v-model="startDate"
+                        type="date"
+                        class="w-full sm:w-44"
+                    />
+                </div>
+                <div class="space-y-1.5">
+                    <Label for="invoice-end-date">Đến ngày</Label>
+                    <Input
+                        id="invoice-end-date"
+                        v-model="endDate"
+                        type="date"
+                        class="w-full sm:w-44"
+                    />
+                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    :disabled="!hasDateFilter"
+                    @click="clearDateFilters"
+                >
+                    Xóa bộ lọc
+                </Button>
+            </div>
+
             <div class="border rounded-md overflow-x-auto">
                 <Table>
                     <TableHeader>
@@ -190,17 +243,23 @@ function formatDate(dateStr: string): string {
                                 Đang tải danh sách hóa đơn...
                             </TableCell>
                         </TableRow>
-                        <TableRow v-else-if="invoices.length === 0">
+                        <TableRow v-else-if="filteredInvoices.length === 0">
                             <TableCell
                                 colspan="5"
                                 class="text-center py-10 text-muted-foreground text-sm"
                             >
-                                Chưa có hóa đơn bán nào được lập.
+                                {{
+                                    isDateRangeInvalid
+                                        ? "Ngày bắt đầu không được sau ngày kết thúc."
+                                        : hasDateFilter
+                                          ? "Không tìm thấy hóa đơn trong khoảng thời gian đã chọn."
+                                          : "Chưa có hóa đơn bán nào được lập."
+                                }}
                             </TableCell>
                         </TableRow>
                         <TableRow
                             v-else
-                            v-for="inv in invoices"
+                            v-for="inv in filteredInvoices"
                             :key="inv.maHD"
                             class="hover:bg-muted/40 transition-colors"
                         >
