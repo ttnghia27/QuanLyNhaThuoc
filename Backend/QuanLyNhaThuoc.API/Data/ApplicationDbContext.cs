@@ -90,7 +90,10 @@ public class ApplicationDbContext : DbContext
         // LOTHUC
         modelBuilder.Entity<LoThuoc>(e =>
         {
-            e.ToTable("LOTHUC");
+            e.ToTable("LOTHUC", tb =>
+            {
+                tb.HasTrigger("trg_AfterInsertUpdate_LoThuoc_CapNhatGiaNhap");
+            });
             e.HasKey(x => x.MaLo);
             e.Property(x => x.MaLo).HasMaxLength(15);
             e.Property(x => x.DonGiaNhap).HasColumnType("decimal(18,0)");
