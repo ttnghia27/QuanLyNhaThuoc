@@ -295,7 +295,7 @@ function formatCurrency(val: number): string {
                         <!-- Data rows -->
                         <TableRow
                             v-else
-                            v-for="drug in filteredDrugs"
+                            v-for="drug in sortedDrugs"
                             :key="drug.maThuoc"
                             class="hover:bg-muted/40 transition-colors"
                         >
