@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0Frontend"
-pnpm dev
+pnpm preview
 pause

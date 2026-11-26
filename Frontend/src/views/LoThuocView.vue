@@ -331,7 +331,7 @@ function handleTieuHuy(lot: LoThuoc) {
                                 >
                                     <FlameIcon class="w-3.5 h-3.5" />
                                 </Button>
-                                <span v-else class="text-xs text-muted-foreground"
+                                <span v-else class="text-xs text-muted-foreground w-3.5 h-3.5"
                                     ><FlameIcon class="w-3.5 h-3.5 invisible"
                                 /></span>
                             </TableCell>

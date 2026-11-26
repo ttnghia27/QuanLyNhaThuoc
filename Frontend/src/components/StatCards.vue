@@ -128,7 +128,7 @@ const alertStats = computed(() => {
             <Card
                 v-for="stat in financialStats"
                 :key="stat.title"
-                :class="['flex-1 transition-colors', stat.cardClass]"
+                :class="['flex-1 transition-colors gap-1.5', stat.cardClass]"
             >
                 <CardHeader class="pb-1">
                     <CardTitle :class="['text-xs font-medium', stat.titleClass]">
@@ -137,10 +137,16 @@ const alertStats = computed(() => {
                 </CardHeader>
                 <CardContent>
                     <div v-if="isLoading" class="h-8 w-36 animate-pulse rounded bg-muted" />
-                    <div v-else :class="['text-2xl font-semibold tabular-nums tracking-tight', stat.valueClass]">
+                    <div
+                        v-else
+                        :class="[
+                            'text-2xl font-semibold tabular-nums tracking-tight',
+                            stat.valueClass,
+                        ]"
+                    >
                         {{ stat.value }}
                     </div>
-                    <CardDescription class="mt-1 text-xs">
+                    <CardDescription class="mt-0.5 text-xs">
                         {{ stat.description }}
                     </CardDescription>
                 </CardContent>
@@ -154,7 +160,7 @@ const alertStats = computed(() => {
                 <Card
                     v-for="stat in orderStats"
                     :key="stat.title"
-                    :class="['flex-1', stat.cardClass]"
+                    :class="['flex-1 gap-1.5', stat.cardClass]"
                 >
                     <CardHeader class="pb-1">
                         <CardTitle class="text-sm font-medium text-muted-foreground">
@@ -175,32 +181,31 @@ const alertStats = computed(() => {
                     </CardContent>
                 </Card>
             </div>
-
-            <!-- Cụm cảnh báo nổi bật: Thuốc sắp hết hàng & Lô sắp hết hạn đi cùng nhau -->
-            <div class="flex flex-1 flex-row gap-3 rounded-xl">
-                <Card
-                    v-for="alert in alertStats"
-                    :key="alert.title"
-                    :class="['flex-1', alert.cardClass]"
-                >
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div class="flex items-center gap-2">
-                            <CardTitle class="text-sm font-semibold">
-                                {{ alert.title }}
-                            </CardTitle>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div v-if="isLoading" class="h-9 w-20 animate-pulse rounded bg-muted" />
-                        <div v-else :class="['tracking-tight', alert.valueClass]">
-                            {{ alert.value }}
-                        </div>
-                        <CardDescription class="mt-1 text-xs">
-                            {{ alert.description }}
-                        </CardDescription>
-                    </CardContent>
-                </Card>
-            </div>
+        </div>
+        <!-- Cụm cảnh báo nổi bật: Thuốc sắp hết hàng & Lô sắp hết hạn đi cùng nhau -->
+        <div class="flex flex-1 flex-row gap-3 rounded-xl">
+            <Card
+                v-for="alert in alertStats"
+                :key="alert.title"
+                :class="['flex-1 gap-1.5', alert.cardClass]"
+            >
+                <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div class="flex items-center gap-2">
+                        <CardTitle class="text-sm font-semibold">
+                            {{ alert.title }}
+                        </CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div v-if="isLoading" class="h-9 w-20 animate-pulse rounded bg-muted" />
+                    <div v-else :class="['tracking-tight', alert.valueClass]">
+                        {{ alert.value }}
+                    </div>
+                    <CardDescription class="mt-1 text-xs">
+                        {{ alert.description }}
+                    </CardDescription>
+                </CardContent>
+            </Card>
         </div>
     </div>
 </template>

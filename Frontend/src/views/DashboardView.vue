@@ -47,7 +47,7 @@ function handleMonthsChange(value: string) {
 
 <template>
     <div class="space-y-6">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-bold tracking-tight">Tổng quan hệ thống</h2>
                 <p class="text-xs text-muted-foreground mt-0.5">

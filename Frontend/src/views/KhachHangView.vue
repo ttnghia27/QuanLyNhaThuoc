@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UsersIcon, PlusIcon, PencilIcon, Trash2Icon, SearchIcon, XIcon } from "@lucide/vue";
+import { UsersIcon, PlusIcon, PencilIcon, Trash2Icon, SearchIcon } from "@lucide/vue";
 
 interface KhachHangViewProps {
     customers: KhachHang[];
@@ -58,10 +58,10 @@ const filteredCustomers = computed(() => {
     );
 });
 
-function handleClearSearch() {
-    emit("update:searchQuery", "");
-    emit("search");
-}
+// function handleClearSearch() {
+//     emit("update:searchQuery", "");
+//     emit("search");
+// }
 
 function openCreateModal() {
     editingCustomer.value = null;

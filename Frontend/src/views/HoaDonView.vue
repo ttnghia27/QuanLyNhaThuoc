@@ -30,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ReceiptIcon, PlusIcon, EyeIcon, Trash2Icon, InfoIcon } from "@lucide/vue";
+import { ReceiptIcon, PlusIcon, Trash2Icon, InfoIcon } from "@lucide/vue";
 
 interface HoaDonViewProps {
     invoices: HoaDon[];
@@ -215,10 +215,7 @@ function formatDate(dateStr: string): string {
                 </div>
 
                 <div class="flex items-center gap-2 shrink-0">
-                    <Select
-                        :model-value="sortBy"
-                        @update:model-value="handleSortChange"
-                    >
+                    <Select :model-value="sortBy" @update:model-value="handleSortChange">
                         <SelectTrigger class="h-9 w-full text-sm sm:w-52">
                             <SelectValue placeholder="Sắp xếp hóa đơn" />
                         </SelectTrigger>

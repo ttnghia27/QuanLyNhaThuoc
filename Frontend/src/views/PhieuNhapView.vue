@@ -36,7 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileDownIcon, PlusIcon, EyeIcon, Trash2Icon, InfoIcon } from "@lucide/vue";
+import { FileDownIcon, PlusIcon, Trash2Icon, InfoIcon } from "@lucide/vue";
 
 interface PhieuNhapViewProps {
     receipts: PhieuNhap[];
@@ -66,9 +66,7 @@ const sortComparators: Record<ReceiptSortOption, (a: PhieuNhap, b: PhieuNhap) =>
     totalDesc: (a, b) => b.tongTien - a.tongTien,
 };
 
-const sortedReceipts = computed(() =>
-    [...props.receipts].sort(sortComparators[sortBy.value]),
-);
+const sortedReceipts = computed(() => [...props.receipts].sort(sortComparators[sortBy.value]));
 
 function handleSortChange(value: AcceptableValue) {
     if (typeof value !== "string") return;
